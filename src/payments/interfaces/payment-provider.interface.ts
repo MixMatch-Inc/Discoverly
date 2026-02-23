@@ -11,7 +11,7 @@ export interface CreatePaymentIntentInput {
   orderId: string
   amount: string
   currency: string
-  destinationAddress: string
+  destinationAddress?: string
 }
 
 export interface PaymentIntent {
