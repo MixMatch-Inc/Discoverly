@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { DatabaseModule } from "./database/database.module"
 import { UsersModule } from "./users/users.module"
+import { PaymentsModule } from "./payments/payments.module"
 import { User } from './users/entities/user.entity';
 
 @Module({
@@ -25,6 +26,7 @@ import { User } from './users/entities/user.entity';
     AuthModule,
     DatabaseModule,
     UsersModule,
+    PaymentsModule,
   ],
   providers: [
     {
