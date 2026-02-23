@@ -1,4 +1,4 @@
-export type PaymentProviderId = "flare" | "stellar"
+export type PaymentProviderId = "stellar"
 
 export type PaymentStatus =
   | "created"
