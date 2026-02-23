@@ -229,10 +229,21 @@ Update API base URL inside config.
 | Variable           | Description               |
 | ------------------ | ------------------------- |
 | PORT               | API port                  |
-| MONGO_URI          | MongoDB connection string |
+| DATABASE_URL       | PostgreSQL connection URL |
 | JWT_SECRET         | Auth signing secret       |
-| STELLAR_SECRET_KEY | Server wallet secret      |
 | STELLAR_NETWORK    | testnet / public          |
+| STELLAR_HORIZON_URL | Optional Horizon override |
+| STELLAR_DESTINATION_ADDRESS | Merchant receiving wallet |
+| PAYMENT_RECONCILIATION_INTERVAL_MS | Reconciliation interval |
+| PAYMENT_RECONCILIATION_BATCH_SIZE | Reconciliation batch size |
+| PAYMENT_RECONCILIATION_STALE_MS | Reconciliation staleness threshold |
+| PAYMENT_LISTENER_INTERVAL_MS | Listener polling interval |
+| PAYMENT_LISTENER_BATCH_SIZE | Listener page size |
+| STELLAR_PAYMENTS_START_CURSOR | Initial cursor (`now` recommended) |
+| PAYMENT_EVENT_PROCESSOR_INTERVAL_MS | Event worker interval |
+| PAYMENT_EVENT_PROCESSOR_BATCH_SIZE | Event worker batch size |
+| PAYMENT_EVENT_RETRY_BASE_MS | Retry base delay |
+| PAYMENT_EVENT_RETRY_MAX_MS | Retry max delay |
 
 ---
 
@@ -297,6 +308,24 @@ Order statuses:
 * Use production Stellar network
 * Secure environment variables
 
+### Stellar Cutover Runbook
+
+1. Deploy the backend with `PAYMENT_PROVIDER` removed and Stellar env vars populated.
+2. Set `STELLAR_NETWORK=testnet` and verify one end-to-end payment in staging.
+3. Confirm async processors are running:
+   * Listener inserts rows into `payment_events`
+   * Event processor moves rows to `processed`
+   * Reconciliation updates `payment_transactions` from `submitted/pending` to terminal status
+4. Run duplicate-event test by posting the same webhook payload twice to `/payments/webhooks/stellar`; ensure only one event record is created.
+5. Promote to production by switching `STELLAR_NETWORK=public` and (optionally) `STELLAR_HORIZON_URL=https://horizon.stellar.org`.
+
+### Rollback Plan
+
+1. Pause payment traffic at the API gateway/load balancer.
+2. Revert the backend deployment to the previous release artifact.
+3. Keep `payment_transactions` and `payment_events` tables intact for audit continuity.
+4. Re-enable traffic and reconcile any in-flight orders manually from persisted tx hashes.
+
 ### Mobile
 
 * Expo EAS build
@@ -351,4 +380,3 @@ Discoverly combines the addictive swipe UX of modern dating apps with the power 
 
 Food meets finance.
 Discovery meets decentralization.
-
