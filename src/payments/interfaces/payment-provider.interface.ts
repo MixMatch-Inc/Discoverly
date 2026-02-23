@@ -25,6 +25,11 @@ export interface PaymentIntent {
 
 export interface SubmitPaymentInput {
   signedPayload: string
+  orderId?: string
+  amount?: string
+  destinationAddress?: string
+  memo?: string
+  asset?: string
 }
 
 export interface SubmittedPayment {
