@@ -59,7 +59,7 @@ export class PaymentTransactionsService {
     existing.asset = input.asset ?? existing.asset
     existing.memo = input.memo ?? existing.memo
     existing.amount = input.amount ?? existing.amount
-    existing.status = input.status ?? existing.status
+    existing.status = this.resolveNextStatus(existing.status, input.status)
     existing.ledger = input.ledger ?? existing.ledger
     existing.failureReason = input.failureReason ?? existing.failureReason
     existing.lastCheckedAt = new Date()
@@ -98,5 +98,28 @@ export class PaymentTransactionsService {
 
   findByTxHash(txHash: string): Promise<PaymentTransaction | null> {
     return this.repository.findOne({ where: { txHash } })
+  }
+
+  private resolveNextStatus(
+    current: PaymentTransactionStatus,
+    incoming?: PaymentTransactionStatus,
+  ): PaymentTransactionStatus {
+    if (!incoming) {
+      return current
+    }
+
+    if (current === "confirmed") {
+      return "confirmed"
+    }
+
+    if (incoming === "confirmed") {
+      return "confirmed"
+    }
+
+    if (current === "failed" && incoming !== "confirmed") {
+      return "failed"
+    }
+
+    return incoming
   }
 }
