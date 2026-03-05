@@ -11,6 +11,8 @@ Built with:
 * ⭐ **Stellar** – On-chain payment processing
 * 🍃 **MongoDB** – Data persistence
 
+  [FIGMA](https://www.figma.com/design/O348reXxWx3QDmHR9gPcss/discoverly?node-id=0-1&t=KNjXb2DC9rR8VJeR-1)
+
 ---
 
 ## 🚀 Overview
