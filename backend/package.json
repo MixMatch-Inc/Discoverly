@@ -11,10 +11,11 @@
     "format": "prettier --check \"src/**/*.ts\" \"scripts/**/*.ts\" \"test/**/*.ts\"",
     "format:write": "prettier --write \"src/**/*.ts\" \"scripts/**/*.ts\" \"test/**/*.ts\"",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test test/**/*.test.ts",
+    "test": "NODE_ENV=test MONGODB_URI=mongodb://localhost:27017/discoverly_test JWT_SECRET=test_secret tsx --test test/**/*.test.ts",
     "seed": "tsx scripts/seed.ts"
   },
   "dependencies": {
+    "jsonwebtoken": "^9.0.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
@@ -27,6 +28,7 @@
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.6",
     "@types/morgan": "^1.9.9",
     "@types/node": "^20.16.5",
     "@types/supertest": "^6.0.2",
