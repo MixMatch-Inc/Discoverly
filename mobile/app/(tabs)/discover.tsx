@@ -1,386 +1,336 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import {
-  ActivityIndicator,
-  Animated,
-  Dimensions,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native"
-import { Image as ExpoImage } from "expo-image"
-import { fetchDiscoverFeed, sendSwipe, type DiscoverItem } from "../../src/lib/api"
-import { FoodDetailsSheet } from "../../src/components/FoodDetailsSheet"
+import { useMemo, useState } from "react"
+import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native"
+import { Image } from "expo-image"
+import { Gesture, GestureDetector } from "react-native-gesture-handler"
+import Animated, {
+  Extrapolation,
+  interpolate,
+  runOnJS,
+  type SharedValue,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from "react-native-reanimated"
+import { mockFoodItems, type MockFoodItem } from "../../src/mocks/foods"
 
-const DISCOVERY_COORDINATES = {
-  longitude: -73.99,
-  latitude: 40.73,
-}
+const { width: SCREEN_WIDTH } = Dimensions.get("window")
+const SWIPE_THRESHOLD = 120
+const SWIPE_OUT_DISTANCE = SCREEN_WIDTH * 1.3
+const STACK_SIZE = 3
 
-const PREFETCH_THRESHOLD = 3
-const SWIPE_OUT_DISTANCE = Dimensions.get("window").width + 80
+type SwipeDirection = "left" | "right"
 
 export default function DiscoverScreen() {
-  const [cards, setCards] = useState<DiscoverItem[]>([])
-  const [cursor, setCursor] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [prefetching, setPrefetching] = useState(false)
-  const [loadError, setLoadError] = useState<string | null>(null)
-  const [selectedCard, setSelectedCard] = useState<DiscoverItem | null>(null)
-  const [modalVisible, setModalVisible] = useState(false)
+  const [activeIndex, setActiveIndex] = useState(0)
+  const translateX = useSharedValue(0)
+  const translateY = useSharedValue(0)
+  const isAnimating = useSharedValue(false)
 
-  const modalAnim = useRef(new Animated.Value(0)).current
-  const topCardX = useRef(new Animated.Value(0)).current
+  const cards = useMemo(() => mockFoodItems.slice(activeIndex), [activeIndex])
+  const visibleCards = cards.slice(0, STACK_SIZE)
 
-  const prefetchImages = useCallback(async (items: DiscoverItem[]) => {
-    const urls = items.map((item) => item.imageUrl).filter(Boolean)
-    if (urls.length > 0) {
-      await ExpoImage.prefetch(urls)
+  const consumeTopCard = (direction: SwipeDirection) => {
+    const current = mockFoodItems[activeIndex]
+    if (!current) {
+      return
     }
-  }, [])
 
-  const loadPage = useCallback(
-    async (nextCursor?: string | null, append = false) => {
-      const result = await fetchDiscoverFeed({
-        ...DISCOVERY_COORDINATES,
-        cursor: nextCursor,
-      })
-
-      await prefetchImages(result.items)
-      setCards((prev) => (append ? [...prev, ...result.items] : result.items))
-      setCursor(result.cursor)
-      setLoadError(null)
-    },
-    [prefetchImages],
-  )
-
-  const loadInitialPage = useCallback(async () => {
-    setLoading(true)
-    try {
-      await loadPage(null, false)
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to load discover feed"
-      setLoadError(message)
-      setCards([])
-      setCursor(null)
-    } finally {
-      setLoading(false)
+    if (direction === "right") {
+      console.log(`Swiped Right: [${current.id}]`)
+    } else {
+      console.log(`Swiped Left: [${current.id}]`)
     }
-  }, [loadPage])
 
-  useEffect(() => {
-    let active = true
-
-    ;(async () => {
-      await loadInitialPage()
-      if (!active) {
-        return
-      }
-    })()
-
-    return () => {
-      active = false
-    }
-  }, [loadInitialPage])
-
-  const maybePrefetchNext = useCallback(
-    async (remaining: number) => {
-      if (remaining > PREFETCH_THRESHOLD || !cursor || prefetching) {
-        return
-      }
-
-      setPrefetching(true)
-      try {
-        await loadPage(cursor, true)
-      } catch {
-        // Keep current cards available if prefetch fails.
-      } finally {
-        setPrefetching(false)
-      }
-    },
-    [cursor, loadPage, prefetching],
-  )
-
-  const hideModal = useCallback(() => {
-    return new Promise<void>((resolve) => {
-      if (!modalVisible) {
-        resolve()
-        return
-      }
-
-      Animated.timing(modalAnim, {
-        toValue: 0,
-        duration: 180,
-        useNativeDriver: true,
-      }).start(() => {
-        setModalVisible(false)
-        setSelectedCard(null)
-        resolve()
-      })
-    })
-  }, [modalAnim, modalVisible])
-
-  const showModal = useCallback(
-    (card: DiscoverItem) => {
-      setSelectedCard(card)
-      setModalVisible(true)
-      modalAnim.setValue(0)
-      Animated.timing(modalAnim, {
-        toValue: 1,
-        duration: 220,
-        useNativeDriver: true,
-      }).start()
-    },
-    [modalAnim],
-  )
-
-  const animateSwipeOut = useCallback((direction: 1 | -1) => {
-    return new Promise<void>((resolve) => {
-      Animated.timing(topCardX, {
-        toValue: direction * SWIPE_OUT_DISTANCE,
-        duration: 230,
-        useNativeDriver: true,
-      }).start(() => {
-        topCardX.setValue(0)
-        resolve()
-      })
-    })
-  }, [topCardX])
-
-  const handleSwipe = useCallback(
-    async (action: "like" | "pass") => {
-      const top = cards[0]
-      if (!top) {
-        return
-      }
-
-      await hideModal()
-      await animateSwipeOut(action === "like" ? 1 : -1)
-
-      setCards((prev) => prev.slice(1))
-      void sendSwipe({ foodId: top.id, action }).catch(() => {})
-
-      const remaining = cards.length - 1
-      await maybePrefetchNext(remaining)
-    },
-    [animateSwipeOut, cards, hideModal, maybePrefetchNext],
-  )
-
-  const stack = useMemo(() => cards.slice(0, 3), [cards])
-
-  const modalTranslateY = modalAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [320, 0],
-  })
-
-  const modalBackdropOpacity = modalAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 0.45],
-  })
-
-  const topCardRotate = topCardX.interpolate({
-    inputRange: [-SWIPE_OUT_DISTANCE, 0, SWIPE_OUT_DISTANCE],
-    outputRange: ["-10deg", "0deg", "10deg"],
-  })
-
-  if (loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator />
-        <Text style={styles.caption}>Loading discovery feed...</Text>
-      </View>
-    )
+    setActiveIndex((prev) => prev + 1)
   }
 
-  if (loadError) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.title}>Could not load discovery feed</Text>
-        <Text style={styles.caption}>{loadError}</Text>
-        <Pressable style={[styles.button, styles.retryBtn]} onPress={() => void loadInitialPage()}>
-          <Text style={styles.buttonText}>Retry</Text>
-        </Pressable>
-      </View>
-    )
+  const panGesture = Gesture.Pan()
+    .onUpdate((event) => {
+      if (isAnimating.value) {
+        return
+      }
+
+      translateX.value = event.translationX
+      translateY.value = event.translationY * 0.18
+    })
+    .onEnd(() => {
+      if (isAnimating.value) {
+        return
+      }
+
+      if (translateX.value > SWIPE_THRESHOLD) {
+        isAnimating.value = true
+        translateX.value = withTiming(SWIPE_OUT_DISTANCE, { duration: 220 }, (finished) => {
+          if (finished) {
+            translateX.value = 0
+            translateY.value = 0
+            isAnimating.value = false
+            runOnJS(consumeTopCard)("right")
+          }
+        })
+        return
+      }
+
+      if (translateX.value < -SWIPE_THRESHOLD) {
+        isAnimating.value = true
+        translateX.value = withTiming(-SWIPE_OUT_DISTANCE, { duration: 220 }, (finished) => {
+          if (finished) {
+            translateX.value = 0
+            translateY.value = 0
+            isAnimating.value = false
+            runOnJS(consumeTopCard)("left")
+          }
+        })
+        return
+      }
+
+      translateX.value = withSpring(0, { damping: 18, stiffness: 160, mass: 0.9 })
+      translateY.value = withSpring(0, { damping: 18, stiffness: 160, mass: 0.9 })
+    })
+
+  const onButtonSwipe = (direction: SwipeDirection) => {
+    if (isAnimating.value || cards.length === 0) {
+      return
+    }
+
+    isAnimating.value = true
+    const toValue = direction === "right" ? SWIPE_OUT_DISTANCE : -SWIPE_OUT_DISTANCE
+    translateX.value = withTiming(toValue, { duration: 220 }, (finished) => {
+      if (finished) {
+        translateX.value = 0
+        translateY.value = 0
+        isAnimating.value = false
+        runOnJS(consumeTopCard)(direction)
+      }
+    })
   }
 
   if (cards.length === 0) {
     return (
-      <View style={styles.center}>
-        <Text style={styles.title}>No more items nearby</Text>
-        <Text style={styles.caption}>Try again in a moment.</Text>
+      <View style={styles.empty}>
+        <Text style={styles.emptyTitle}>No More Cards</Text>
+        <Text style={styles.emptySubtitle}>You have reviewed all mock dishes.</Text>
+        <Pressable style={styles.resetButton} onPress={() => setActiveIndex(0)}>
+          <Text style={styles.resetLabel}>Reset Stack</Text>
+        </Pressable>
       </View>
     )
   }
 
   return (
     <View style={styles.container}>
-      <View style={styles.stackWrap}>
-        {stack
-          .map((item, index) => ({ item, index }))
-          .reverse()
-          .map(({ item, index }) => {
-            const isTop = index === 0
-            const CardContainer = isTop ? Animated.View : View
-
-            return (
-              <CardContainer
-                key={item.id}
-                style={[
-                  styles.card,
-                  {
-                    top: index * 10,
-                    transform: [
-                      { scale: 1 - index * 0.03 },
-                      ...(isTop ? [{ translateX: topCardX }, { rotate: topCardRotate }] : []),
-                    ],
-                  },
-                ]}
-              >
-                <Pressable style={styles.cardTap} onPress={() => showModal(item)}>
-                  <ExpoImage source={item.imageUrl} style={styles.image} contentFit="cover" />
-                  <View style={styles.cardBody}>
-                    <Text style={styles.foodName}>{item.name}</Text>
-                    <Text style={styles.meta}>{item.restaurantName}</Text>
-                    <Text style={styles.meta}>
-                      ${item.price.toFixed(2)} • {(item.distanceMeters / 1000).toFixed(1)}km
-                    </Text>
-                  </View>
-                </Pressable>
-                <Pressable style={styles.infoButton} onPress={() => showModal(item)}>
-                  <Text style={styles.infoButtonText}>Info</Text>
-                </Pressable>
-              </CardContainer>
-            )
-          })}
-      </View>
+      <GestureDetector gesture={panGesture}>
+        <View style={styles.stackContainer}>
+          {visibleCards
+            .map((card, index) => ({ card, index }))
+            .reverse()
+            .map(({ card, index }) => {
+              const isTop = index === 0
+              return (
+                <SwipeCard key={card.id} card={card} depth={index} isTop={isTop} tx={translateX} ty={translateY} />
+              )
+            })}
+        </View>
+      </GestureDetector>
 
       <View style={styles.actions}>
-        <Pressable style={[styles.button, styles.passBtn]} onPress={() => void handleSwipe("pass")}>
-          <Text style={styles.buttonText}>Pass</Text>
+        <Pressable style={[styles.actionButton, styles.nopeButton]} onPress={() => onButtonSwipe("left")}>
+          <Text style={styles.actionLabel}>Pass</Text>
         </Pressable>
-        <Pressable style={[styles.button, styles.likeBtn]} onPress={() => void handleSwipe("like")}>
-          <Text style={styles.buttonText}>Like</Text>
+        <Pressable style={[styles.actionButton, styles.likeButton]} onPress={() => onButtonSwipe("right")}>
+          <Text style={styles.actionLabel}>Like</Text>
         </Pressable>
       </View>
-
-      {prefetching ? <Text style={styles.caption}>Prefetching next cards...</Text> : null}
-
-      <FoodDetailsSheet
-        visible={modalVisible}
-        card={selectedCard}
-        onClose={() => {
-          void hideModal()
-        }}
-        onSwipePass={() => {
-          void handleSwipe("pass")
-        }}
-        onSwipeLike={() => {
-          void handleSwipe("like")
-        }}
-        translateY={modalTranslateY}
-        backdropOpacity={modalBackdropOpacity}
-      />
     </View>
+  )
+}
+
+type SwipeCardProps = {
+  card: MockFoodItem
+  depth: number
+  isTop: boolean
+  tx: SharedValue<number>
+  ty: SharedValue<number>
+}
+
+function SwipeCard({ card, depth, isTop, tx, ty }: SwipeCardProps) {
+  const cardStyle = useAnimatedStyle(() => {
+    const dragAbs = Math.abs(tx.value)
+    const baseScale = 1 - depth * 0.04
+    const nextScaleBoost = depth === 1 ? interpolate(dragAbs, [0, SWIPE_THRESHOLD], [0, 0.04], Extrapolation.CLAMP) : 0
+
+    return {
+      transform: [
+        { translateX: isTop ? tx.value : 0 },
+        { translateY: isTop ? ty.value : depth * 12 },
+        {
+          rotate: isTop
+            ? `${interpolate(tx.value, [-SWIPE_OUT_DISTANCE, 0, SWIPE_OUT_DISTANCE], [-13, 0, 13], Extrapolation.CLAMP)}deg`
+            : "0deg",
+        },
+        { scale: baseScale + nextScaleBoost },
+      ],
+      zIndex: 100 - depth,
+    }
+  })
+
+  const likeStampStyle = useAnimatedStyle(() => ({
+    opacity: isTop ? interpolate(tx.value, [40, SWIPE_THRESHOLD], [0, 1], Extrapolation.CLAMP) : 0,
+    transform: [{ scale: isTop ? interpolate(tx.value, [40, SWIPE_THRESHOLD], [0.8, 1], Extrapolation.CLAMP) : 0.8 }],
+  }))
+
+  const nopeStampStyle = useAnimatedStyle(() => ({
+    opacity: isTop ? interpolate(tx.value, [-40, -SWIPE_THRESHOLD], [0, 1], Extrapolation.CLAMP) : 0,
+    transform: [
+      {
+        scale: isTop ? interpolate(tx.value, [-40, -SWIPE_THRESHOLD], [0.8, 1], Extrapolation.CLAMP) : 0.8,
+      },
+    ],
+  }))
+
+  return (
+    <Animated.View style={[styles.card, cardStyle]}>
+      <Image source={card.imageUrl} style={styles.image} contentFit="cover" />
+
+      <Animated.View style={[styles.stamp, styles.likeStamp, likeStampStyle]}>
+        <Text style={styles.stampLabel}>LIKE</Text>
+      </Animated.View>
+      <Animated.View style={[styles.stamp, styles.nopeStamp, nopeStampStyle]}>
+        <Text style={styles.stampLabel}>NOPE</Text>
+      </Animated.View>
+
+      <View style={styles.cardBody}>
+        <Text style={styles.foodName}>{card.name}</Text>
+        <Text style={styles.meta}>{card.restaurant}</Text>
+        <Text style={styles.meta}>${card.price.toFixed(2)}</Text>
+      </View>
+    </Animated.View>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
     backgroundColor: "#F8F9FA",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 20,
+    padding: 18,
   },
-  center: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "700",
-  },
-  caption: {
-    color: "#666",
-    marginTop: 10,
-  },
-  stackWrap: {
+  stackContainer: {
     width: "100%",
     maxWidth: 380,
-    height: 520,
-    position: "relative",
-    marginBottom: 20,
+    height: 540,
+    justifyContent: "center",
+    alignItems: "center",
   },
   card: {
     position: "absolute",
     width: "100%",
     height: 500,
-    borderRadius: 20,
+    borderRadius: 24,
     overflow: "hidden",
-    backgroundColor: "#fff",
+    backgroundColor: "#FFFFFF",
     shadowColor: "#000",
+    shadowOpacity: 0.14,
+    shadowRadius: 14,
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 6,
-  },
-  cardTap: {
-    flex: 1,
+    elevation: 7,
   },
   image: {
     width: "100%",
-    height: "78%",
+    height: "82%",
   },
   cardBody: {
-    padding: 14,
-    gap: 4,
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 2,
   },
   foodName: {
-    fontSize: 20,
-    fontWeight: "700",
+    fontSize: 22,
+    fontWeight: "800",
+    color: "#111827",
   },
   meta: {
-    color: "#555",
+    color: "#4B5563",
+    fontSize: 14,
   },
-  infoButton: {
+  stamp: {
     position: "absolute",
-    right: 12,
-    top: 12,
-    backgroundColor: "rgba(17,24,39,0.75)",
-    paddingHorizontal: 10,
+    top: 28,
+    borderWidth: 3,
+    borderRadius: 12,
+    paddingHorizontal: 14,
     paddingVertical: 6,
-    borderRadius: 10,
+    backgroundColor: "rgba(255,255,255,0.92)",
   },
-  infoButtonText: {
-    color: "#fff",
-    fontWeight: "700",
-    fontSize: 12,
+  likeStamp: {
+    right: 24,
+    borderColor: "#1FAF62",
+  },
+  nopeStamp: {
+    left: 24,
+    borderColor: "#EF4444",
+  },
+  stampLabel: {
+    fontSize: 22,
+    fontWeight: "900",
+    color: "#111827",
+    letterSpacing: 0.7,
   },
   actions: {
     flexDirection: "row",
-    gap: 12,
-  },
-  button: {
-    minWidth: 130,
-    paddingVertical: 14,
-    borderRadius: 14,
     alignItems: "center",
+    gap: 16,
+    marginTop: 22,
   },
-  passBtn: {
+  actionButton: {
+    minWidth: 138,
+    borderRadius: 16,
+    paddingVertical: 13,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
+  },
+  nopeButton: {
     backgroundColor: "#E53935",
   },
-  likeBtn: {
-    backgroundColor: "#2E7D32",
+  likeButton: {
+    backgroundColor: "#1FAF62",
   },
-  retryBtn: {
-    marginTop: 12,
-    backgroundColor: "#1D4ED8",
+  actionLabel: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "800",
   },
-  buttonText: {
-    color: "#fff",
+  empty: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    padding: 20,
+  },
+  emptyTitle: {
+    fontSize: 24,
+    fontWeight: "800",
+  },
+  emptySubtitle: {
+    color: "#6B7280",
+  },
+  resetButton: {
+    marginTop: 8,
+    backgroundColor: "#111827",
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  resetLabel: {
+    color: "#FFFFFF",
     fontWeight: "700",
   },
 })
