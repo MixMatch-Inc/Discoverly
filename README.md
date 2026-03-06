@@ -1,384 +1,66 @@
-# Discoverly 🍽✨
+# Discoverly
 
-**Swipe. Match. Order. Pay with Stellar.**
+Discoverly is a swipe-first food discovery app with Stellar-powered checkout.
 
-Discoverly is a Tinder-style food ordering app where users swipe through food items, match with their cravings, and pay seamlessly using the Stellar blockchain.
+## Active Stack
 
-Built with:
+- Mobile: Expo + React Native + TypeScript
+- Backend: Node.js + Express + TypeScript + MongoDB (Mongoose)
+- Blockchain: Stellar
 
-* ⚛️ **Expo (React Native)** – Mobile app
-* 🟢 **Express.js** – Backend API
-* ⭐ **Stellar** – On-chain payment processing
-* 🍃 **MongoDB** – Data persistence
+## Repository Structure
 
-  [FIGMA](https://www.figma.com/design/O348reXxWx3QDmHR9gPcss/discoverly?node-id=0-1&t=KNjXb2DC9rR8VJeR-1)
-
----
-
-## 🚀 Overview
-
-Discoverly reimagines food ordering with a swipe-based discovery experience.
-
-Instead of scrolling through long menus:
-
-* Users **swipe right** to like a dish
-* Swipe left to skip
-* Matched dishes go into their cart
-* Payments are processed via **Stellar blockchain**
-
-This allows:
-
-* Fast crypto-native checkout
-* Low transaction fees
-* Borderless payments
-* Transparent transaction tracking
-
----
-
-## 🏗 Architecture
-
-```
+```text
 discoverly/
-│
-├── mobile/          → Expo (React Native) app
-├── backend/         → Express.js API
-├── stellar/         → Stellar payment utilities & services
-└── README.md
+  backend/                # Active backend implementation
+  mobile/                 # Active mobile implementation
+  web/                    # Reserved for restaurant dashboard
+  docs/adr/               # Architecture decisions
+  legacy/nest-backend/    # Archived legacy backend (read-only)
 ```
 
-### Mobile (Expo)
+## Why This Bootstrap Exists
 
-* Swipe UI (card stack)
-* User authentication
-* Wallet connection
-* Order flow
-* Payment confirmation
+This repository was normalized so contributors can pick up Phase 1/2 issues without
+stack ambiguity. The active implementation target is documented in:
 
-### Backend (Express)
+- `docs/adr/0001-stack-and-repo-structure.md`
 
-* Auth & session management
-* Restaurant & food listing APIs
-* Match & cart management
-* Order creation
-* Stellar payment verification
-* Webhook/event listeners
+## Quick Start
 
-### Stellar Layer
-
-* Wallet creation (optional custodial)
-* Payment intent generation
-* Transaction submission
-* Transaction verification
-* Payment status tracking
-
----
-
-## ⚙️ Tech Stack
-
-### Mobile
-
-* Expo
-* React Native
-* React Navigation
-* Axios
-* Zustand (or preferred state manager)
-
-### Backend
-
-* Node.js
-* Express.js
-* MongoDB + Mongoose
-* Stellar SDK
-* JWT Authentication
-
-### Blockchain
-
-* Stellar Network
-* Stellar SDK (JavaScript)
-* Horizon API
-
----
-
-## 🔑 Key Features
-
-### 👤 User
-
-* Register / Login
-* Swipe-based food discovery
-* Add to cart via match
-* Checkout with Stellar
-* View order history
-* Track payment status
-
-### 🍔 Restaurant
-
-* Create food listings
-* Manage availability
-* Receive on-chain payments
-
-### 💳 Payments (Stellar)
-
-* Create payment request
-* User signs transaction
-* Submit to Stellar network
-* Verify on backend
-* Confirm order after verification
-
----
-
-# ⭐ Stellar Integration
-
-## Network Configuration
-
-```js
-import { Horizon, Networks } from "stellar-sdk";
-
-const server = new Horizon.Server("https://horizon-testnet.stellar.org");
-
-const networkPassphrase = Networks.TESTNET; 
-```
-
----
-
-## 💰 Payment Flow
-
-1. User taps **Checkout**
-2. Backend creates a **payment intent**
-3. Backend returns:
-
-   * Destination address
-   * Amount
-   * Memo (order ID)
-4. User signs transaction
-5. Transaction submitted to Stellar
-6. Backend verifies:
-
-   * Transaction hash
-   * Destination
-   * Memo
-   * Amount
-7. Order marked as **PAID**
-
----
-
-## 🔄 Example Payment Verification
-
-```js
-const tx = await server.transactions().transaction(txHash).call();
-
-if (
-  tx.memo === orderId &&
-  tx.successful
-) {
-  // Mark order as paid
-}
-```
-
----
-
-# 📦 Installation
-
-## 1️⃣ Clone Repo
+### 1) Install Workspace Dependencies
 
 ```bash
-git clone https://github.com/your-username/discoverly.git
-cd discoverly
+npm run bootstrap
 ```
 
----
-
-## 2️⃣ Backend Setup
+### 2) Run Backend
 
 ```bash
 cd backend
-npm install
-```
-
-Create `.env`:
-
-```
-PORT=5000
-MONGO_URI=
-JWT_SECRET=
-STELLAR_SECRET_KEY=
-STELLAR_NETWORK=testnet
-```
-
-Run:
-
-```bash
+cp .env.example .env
 npm run dev
 ```
 
----
+Or run backend + Mongo together from repo root:
 
-## 3️⃣ Mobile Setup
+```bash
+docker-compose up --build
+```
+
+### 3) Run Mobile
 
 ```bash
 cd mobile
-npm install
-npx expo start
+cp .env.example .env
+npm run start
 ```
 
-Update API base URL inside config.
+## CI Baseline
 
----
+Starter workflows are included for backend/mobile PR checks:
 
-# 🔐 Environment Variables
+- `.github/workflows/backend.yml`
+- `.github/workflows/mobile.yml`
 
-### Backend
-
-| Variable           | Description               |
-| ------------------ | ------------------------- |
-| PORT               | API port                  |
-| DATABASE_URL       | PostgreSQL connection URL |
-| JWT_SECRET         | Auth signing secret       |
-| STELLAR_NETWORK    | testnet / public          |
-| STELLAR_HORIZON_URL | Optional Horizon override |
-| STELLAR_DESTINATION_ADDRESS | Merchant receiving wallet |
-| PAYMENT_RECONCILIATION_INTERVAL_MS | Reconciliation interval |
-| PAYMENT_RECONCILIATION_BATCH_SIZE | Reconciliation batch size |
-| PAYMENT_RECONCILIATION_STALE_MS | Reconciliation staleness threshold |
-| PAYMENT_LISTENER_INTERVAL_MS | Listener polling interval |
-| PAYMENT_LISTENER_BATCH_SIZE | Listener page size |
-| STELLAR_PAYMENTS_START_CURSOR | Initial cursor (`now` recommended) |
-| PAYMENT_EVENT_PROCESSOR_INTERVAL_MS | Event worker interval |
-| PAYMENT_EVENT_PROCESSOR_BATCH_SIZE | Event worker batch size |
-| PAYMENT_EVENT_RETRY_BASE_MS | Retry base delay |
-| PAYMENT_EVENT_RETRY_MAX_MS | Retry max delay |
-
----
-
-# 📲 Swipe Logic
-
-Food cards are fetched from:
-
-```
-GET /api/foods/discover
-```
-
-Swipe Right:
-
-```
-POST /api/match
-```
-
-Creates:
-
-* Match record
-* Adds to cart
-
-Swipe Left:
-
-* No persistence (optional tracking)
-
----
-
-# 🧠 Order Flow
-
-```
-Swipe → Match → Cart → Checkout → Stellar Payment → Verification → Order Confirmed
-```
-
-Order statuses:
-
-* PENDING
-* AWAITING_PAYMENT
-* PAID
-* PREPARING
-* COMPLETED
-* CANCELLED
-
----
-
-# 🔎 Security Considerations
-
-* Never expose server secret key
-* Verify all Stellar transactions on backend
-* Validate memo & amount
-* Use HTTPS in production
-* Use rate limiting on payment endpoints
-* Consider multi-sig for restaurant wallets (future improvement)
-
----
-
-# 🌍 Deployment
-
-### Backend
-
-* AWS / Railway / Render / DigitalOcean
-* Use production Stellar network
-* Secure environment variables
-
-### Stellar Cutover Runbook
-
-1. Deploy the backend with `PAYMENT_PROVIDER` removed and Stellar env vars populated.
-2. Set `STELLAR_NETWORK=testnet` and verify one end-to-end payment in staging.
-3. Confirm async processors are running:
-   * Listener inserts rows into `payment_events`
-   * Event processor moves rows to `processed`
-   * Reconciliation updates `payment_transactions` from `submitted/pending` to terminal status
-4. Run duplicate-event test by posting the same webhook payload twice to `/payments/webhooks/stellar`; ensure only one event record is created.
-5. Promote to production by switching `STELLAR_NETWORK=public` and (optionally) `STELLAR_HORIZON_URL=https://horizon.stellar.org`.
-
-### Rollback Plan
-
-1. Pause payment traffic at the API gateway/load balancer.
-2. Revert the backend deployment to the previous release artifact.
-3. Keep `payment_transactions` and `payment_events` tables intact for audit continuity.
-4. Re-enable traffic and reconcile any in-flight orders manually from persisted tx hashes.
-
-### Mobile
-
-* Expo EAS build
-* App Store / Play Store deployment
-
----
-
-# 🔮 Future Improvements
-
-* Non-custodial wallet integration
-* QR payment support
-* Restaurant analytics dashboard
-* Stablecoin support (USDC on Stellar)
-* Subscription meal plans
-* On-chain loyalty points
-
----
-
-# 🧪 Testing
-
-Use Stellar Testnet:
-
-* Fund accounts via Friendbot
-* Switch to PUBLIC only in production
-
----
-
-# 🤝 Contributing
-
-1. Fork the repo
-2. Create feature branch
-3. Commit changes
-4. Open PR
-
-Please follow:
-
-* Clean commit messages
-* Consistent code style
-* Proper API documentation
-
----
-
-# 📜 License
-
-MIT License
-
----
-
-# 💡 Vision
-
-Discoverly combines the addictive swipe UX of modern dating apps with the power of blockchain-based payments to create a frictionless, borderless food discovery experience.
-
-Food meets finance.
-Discovery meets decentralization.
+They run install + lint + typecheck and are intended to be extended as issues 1.1 and 1.2 progress.

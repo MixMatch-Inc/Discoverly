@@ -1,0 +1,26 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: discoverly-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  backend:
+    build:
+      context: ./backend
+    container_name: discoverly-backend
+    environment:
+      NODE_ENV: development
+      PORT: 5000
+      MONGODB_URI: mongodb://mongo:27017/discoverly
+      JWT_SECRET: replace_me
+      STELLAR_NETWORK: testnet
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongo
+
+volumes:
+  mongo_data:
