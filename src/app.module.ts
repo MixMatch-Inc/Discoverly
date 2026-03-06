@@ -13,6 +13,7 @@ import { PaymentEvent } from "./payments/entities/payment-event.entity"
 import { PaymentStreamCursor } from "./payments/entities/payment-stream-cursor.entity"
 import { User } from './users/entities/user.entity';
 import { PaymentTransaction } from "./payments/entities/payment-transaction.entity"
+import { RestaurantModule } from './restaurant/restaurant.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { PaymentTransaction } from "./payments/entities/payment-transaction.enti
     DatabaseModule,
     UsersModule,
     PaymentsModule,
+    RestaurantModule,
   ],
   providers: [
     {
