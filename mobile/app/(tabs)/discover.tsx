@@ -2,15 +2,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   ActivityIndicator,
   Animated,
-  Modal,
   Pressable,
   StyleSheet,
   Text,
-  TouchableWithoutFeedback,
   View,
 } from "react-native"
 import { Image as ExpoImage } from "expo-image"
 import { fetchDiscoverFeed, sendSwipe, type DiscoverItem } from "../../src/lib/api"
+import { FoodDetailsSheet } from "../../src/components/FoodDetailsSheet"
 
 const DISCOVERY_COORDINATES = {
   longitude: -73.99,
@@ -182,40 +181,15 @@ export default function DiscoverScreen() {
 
       {prefetching ? <Text style={styles.caption}>Prefetching next cards...</Text> : null}
 
-      <Modal visible={modalVisible} transparent animationType="none" onRequestClose={hideModal}>
-        <TouchableWithoutFeedback onPress={hideModal}>
-          <Animated.View style={[styles.modalBackdrop, { opacity: modalBackdropOpacity }]} />
-        </TouchableWithoutFeedback>
-
-        <Animated.View
-          style={[
-            styles.bottomSheet,
-            {
-              transform: [{ translateY: modalTranslateY }],
-            },
-          ]}
-        >
-          {selectedCard ? (
-            <>
-              <Text style={styles.modalTitle}>{selectedCard.name}</Text>
-              <Text style={styles.modalMeta}>{selectedCard.restaurantName}</Text>
-              <Text style={styles.modalMeta}>
-                ${(selectedCard.price ?? 0).toFixed(2)} • {(selectedCard.distanceMeters / 1000).toFixed(1)}km
-              </Text>
-              <Text style={styles.modalBody}>{selectedCard.description}</Text>
-
-              <View style={styles.modalActions}>
-                <Pressable style={[styles.button, styles.passBtn]} onPress={() => void handleSwipe("pass")}>
-                  <Text style={styles.buttonText}>Swipe Left</Text>
-                </Pressable>
-                <Pressable style={[styles.button, styles.likeBtn]} onPress={() => void handleSwipe("like")}>
-                  <Text style={styles.buttonText}>Swipe Right</Text>
-                </Pressable>
-              </View>
-            </>
-          ) : null}
-        </Animated.View>
-      </Modal>
+      <FoodDetailsSheet
+        visible={modalVisible}
+        card={selectedCard}
+        onClose={hideModal}
+        onSwipePass={() => void handleSwipe("pass")}
+        onSwipeLike={() => void handleSwipe("like")}
+        translateY={modalTranslateY}
+        backdropOpacity={modalBackdropOpacity}
+      />
     </View>
   )
 }
@@ -296,41 +270,5 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
     fontWeight: "700",
-  },
-  modalBackdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "#000",
-  },
-  bottomSheet: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "#fff",
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 28,
-    minHeight: 260,
-  },
-  modalTitle: {
-    fontSize: 24,
-    fontWeight: "800",
-    marginBottom: 4,
-  },
-  modalMeta: {
-    color: "#666",
-    marginBottom: 4,
-  },
-  modalBody: {
-    marginTop: 12,
-    lineHeight: 22,
-    color: "#222",
-  },
-  modalActions: {
-    marginTop: 20,
-    flexDirection: "row",
-    gap: 12,
   },
 })
