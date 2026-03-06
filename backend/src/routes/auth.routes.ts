@@ -3,6 +3,8 @@ import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import { z } from "zod"
 import { env } from "../config/env.js"
+import { authenticate } from "../middleware/authenticate.middleware.js"
+import { requireRole } from "../middleware/require-role.middleware.js"
 import { UserModel, userRoles } from "../models/user.model.js"
 import type { JwtPayload } from "../types/auth.js"
 
@@ -114,4 +116,17 @@ authRouter.post("/login", async (req, res, next) => {
     }
     next(error)
   }
+})
+
+authRouter.get("/me", authenticate, (req, res) => {
+  res.status(200).json({
+    user: req.user,
+  })
+})
+
+authRouter.get("/restaurant-zone", authenticate, requireRole(["restaurant", "admin"]), (_req, res) => {
+  res.status(200).json({
+    ok: true,
+    scope: "restaurant-zone",
+  })
 })
