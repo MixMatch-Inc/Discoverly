@@ -26,3 +26,17 @@ npm run dev
 
 This folder is the target for Phase 1 and Phase 2 backend issues.
 Legacy NestJS code is archived under `/legacy/nest-backend`.
+
+## Docker
+
+From repository root:
+
+```bash
+docker-compose up --build
+```
+
+Health endpoint:
+
+```bash
+curl http://localhost:5000/api/health
+```
