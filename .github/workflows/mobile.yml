@@ -10,6 +10,9 @@ on:
 jobs:
   mobile-checks:
     runs-on: ubuntu-latest
+    env:
+      EXPO_NO_TELEMETRY: 1
+      EXPO_PUBLIC_API_BASE_URL: http://localhost:5000
     defaults:
       run:
         working-directory: mobile
@@ -21,3 +24,4 @@ jobs:
       - run: npm install
       - run: npm run lint
       - run: npm run typecheck
+      - run: npm run export:check

@@ -9,7 +9,8 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "eslint \"**/*.{ts,tsx}\"",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "export:check": "expo export --platform web --output-dir dist-export --clear"
   },
   "dependencies": {
     "expo": "^51.0.0",
