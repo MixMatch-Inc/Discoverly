@@ -4,6 +4,11 @@ services:
     container_name: discoverly-mongo
     ports:
       - "27017:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.runCommand({ ping: 1 })", "--quiet"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
     volumes:
       - mongo_data:/data/db
 
@@ -20,7 +25,8 @@ services:
     ports:
       - "5000:5000"
     depends_on:
-      - mongo
+      mongo:
+        condition: service_healthy
 
 volumes:
   mongo_data:

@@ -9,7 +9,8 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "eslint \"**/*.{ts,tsx}\"",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "export:check": "expo export --platform web --output-dir dist-export --clear"
   },
   "dependencies": {
     "expo": "^51.0.0",
@@ -24,7 +25,7 @@
     "@types/react-native": "^0.73.0",
     "@typescript-eslint/eslint-plugin": "^8.8.1",
     "@typescript-eslint/parser": "^8.8.1",
-    "eslint": "^9.11.1",
+    "eslint": "^8.57.1",
     "eslint-config-prettier": "^9.1.0",
     "eslint-config-universe": "^13.0.0",
     "typescript": "^5.6.2"
