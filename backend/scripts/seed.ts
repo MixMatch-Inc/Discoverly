@@ -12,6 +12,7 @@ async function seed() {
   await RestaurantModel.deleteMany({ name: restaurantName })
 
   const restaurant = await RestaurantModel.create({
+    owner_user_id: new mongoose.Types.ObjectId(),
     name: restaurantName,
     location: {
       type: "Point",
@@ -24,6 +25,7 @@ async function seed() {
   const foodItems = [
     {
       restaurant_id: restaurant._id,
+      owner_user_id: restaurant.owner_user_id,
       name: "Spicy Smash Burger",
       description: "Double patty, chili aioli, pickles, toasted brioche.",
       price: 13.99,
@@ -31,6 +33,7 @@ async function seed() {
     },
     {
       restaurant_id: restaurant._id,
+      owner_user_id: restaurant.owner_user_id,
       name: "Truffle Fries",
       description: "Hand-cut fries, truffle oil, parmesan, parsley.",
       price: 7.5,
@@ -38,6 +41,7 @@ async function seed() {
     },
     {
       restaurant_id: restaurant._id,
+      owner_user_id: restaurant.owner_user_id,
       name: "Firecracker Pizza",
       description: "Pepperoni, jalapeno, hot honey, mozzarella.",
       price: 15.25,
@@ -45,6 +49,7 @@ async function seed() {
     },
     {
       restaurant_id: restaurant._id,
+      owner_user_id: restaurant.owner_user_id,
       name: "Mango Citrus Bowl",
       description: "Fresh mango, avocado, greens, citrus vinaigrette.",
       price: 11.0,
@@ -52,6 +57,7 @@ async function seed() {
     },
     {
       restaurant_id: restaurant._id,
+      owner_user_id: restaurant.owner_user_id,
       name: "Midnight Tiramisu",
       description: "Espresso-soaked layers with mascarpone cream.",
       price: 8.75,

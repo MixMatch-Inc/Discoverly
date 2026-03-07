@@ -124,9 +124,14 @@ authRouter.get("/me", authenticate, (req, res) => {
   })
 })
 
-authRouter.get("/restaurant-zone", authenticate, requireRole(["restaurant", "admin"]), (_req, res) => {
-  res.status(200).json({
-    ok: true,
-    scope: "restaurant-zone",
-  })
-})
+authRouter.get(
+  "/restaurant-zone",
+  authenticate,
+  requireRole(["restaurant", "admin"]),
+  (_req, res) => {
+    res.status(200).json({
+      ok: true,
+      scope: "restaurant-zone",
+    })
+  },
+)

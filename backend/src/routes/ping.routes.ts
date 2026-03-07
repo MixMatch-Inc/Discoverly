@@ -9,13 +9,9 @@ const pingBodySchema = z.object({
 
 export const pingRouter = Router()
 
-pingRouter.post(
-  "/",
-  validateRequest({ body: pingBodySchema }),
-  (req, res) => {
-    res.status(200).json({
-      ok: true,
-      echo: req.body.message,
-    })
-  },
-)
+pingRouter.post("/", validateRequest({ body: pingBodySchema }), (req, res) => {
+  res.status(200).json({
+    ok: true,
+    echo: req.body.message,
+  })
+})

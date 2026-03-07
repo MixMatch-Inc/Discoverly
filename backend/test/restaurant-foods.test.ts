@@ -18,7 +18,8 @@ test("PUT /api/restaurant/foods/:id returns 403 when non-owner restaurant tries 
     owner_user_id: "660000000000000000000777",
     is_active: true,
   })
-  ;(FoodItemModel.findByIdAndUpdate as unknown as (...args: unknown[]) => Promise<unknown>) = async () => null
+  ;(FoodItemModel.findByIdAndUpdate as unknown as (...args: unknown[]) => Promise<unknown>) =
+    async () => null
 
   const response = await request(app)
     .put("/api/restaurant/foods/660000000000000000000099")
@@ -37,7 +38,8 @@ test("DELETE /api/restaurant/foods/:id returns 404 when food does not exist", as
   const token = jwt.sign({ sub: "660000000000000000000001", role: "restaurant" }, env.JWT_SECRET)
   const originalFindById = FoodItemModel.findById
 
-  ;(FoodItemModel.findById as unknown as (...args: unknown[]) => Promise<unknown>) = async () => null
+  ;(FoodItemModel.findById as unknown as (...args: unknown[]) => Promise<unknown>) = async () =>
+    null
 
   const response = await request(app)
     .delete("/api/restaurant/foods/660000000000000000000099")

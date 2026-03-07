@@ -1,10 +1,10 @@
 import type { NextFunction, Request, RequestHandler, Response } from "express"
-import { ZodError, type AnyZodObject } from "zod"
+import { ZodError, type ZodTypeAny } from "zod"
 
 type RequestSchema = {
-  body?: AnyZodObject
-  query?: AnyZodObject
-  params?: AnyZodObject
+  body?: ZodTypeAny
+  query?: ZodTypeAny
+  params?: ZodTypeAny
 }
 
 export function validateRequest(schema: RequestSchema): RequestHandler {

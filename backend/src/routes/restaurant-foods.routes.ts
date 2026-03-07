@@ -34,48 +34,53 @@ export const restaurantFoodsRouter = Router()
 restaurantFoodsRouter.use(authenticate)
 restaurantFoodsRouter.use(requireRole(["restaurant", "admin"]))
 
-restaurantFoodsRouter.post("/", validateRequest({ body: createFoodSchema }), async (req, res, next) => {
-  try {
-    const body = req.body as z.infer<typeof createFoodSchema>
-    const requesterId = req.user!.id
-    const isAdmin = req.user!.role === "admin"
+restaurantFoodsRouter.post(
+  "/",
+  validateRequest({ body: createFoodSchema }),
+  async (req, res, next) => {
+    try {
+      const body = req.body as z.infer<typeof createFoodSchema>
+      const requesterId = req.user!.id
+      const isAdmin = req.user!.role === "admin"
 
-    const restaurantFilter = isAdmin && body.restaurant_id
-      ? { _id: body.restaurant_id, is_active: true }
-      : { owner_user_id: requesterId, is_active: true }
+      const restaurantFilter =
+        isAdmin && body.restaurant_id
+          ? { _id: body.restaurant_id, is_active: true }
+          : { owner_user_id: requesterId, is_active: true }
 
-    const restaurant = await RestaurantModel.findOne(restaurantFilter)
-    if (!restaurant) {
-      res.status(404).json({
-        error: "Not Found",
-        message: "Restaurant not found for current user",
+      const restaurant = await RestaurantModel.findOne(restaurantFilter)
+      if (!restaurant) {
+        res.status(404).json({
+          error: "Not Found",
+          message: "Restaurant not found for current user",
+        })
+        return
+      }
+
+      const created = await FoodItemModel.create({
+        restaurant_id: restaurant._id,
+        owner_user_id: restaurant.owner_user_id,
+        name: body.name,
+        price: body.price,
+        description: body.description,
+        image_url: body.image_url,
+        is_active: true,
       })
-      return
+
+      res.status(201).json({
+        id: String(created._id),
+        restaurant_id: String(created.restaurant_id),
+        name: created.name,
+        price: created.price,
+        description: created.description,
+        image_url: created.image_url,
+        is_active: created.is_active,
+      })
+    } catch (error) {
+      next(error)
     }
-
-    const created = await FoodItemModel.create({
-      restaurant_id: restaurant._id,
-      owner_user_id: restaurant.owner_user_id,
-      name: body.name,
-      price: body.price,
-      description: body.description,
-      image_url: body.image_url,
-      is_active: true,
-    })
-
-    res.status(201).json({
-      id: String(created._id),
-      restaurant_id: String(created.restaurant_id),
-      name: created.name,
-      price: created.price,
-      description: created.description,
-      image_url: created.image_url,
-      is_active: created.is_active,
-    })
-  } catch (error) {
-    next(error)
-  }
-})
+  },
+)
 
 restaurantFoodsRouter.put(
   "/:id",
