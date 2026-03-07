@@ -27,6 +27,8 @@ npm run start
 
 - Deep link scheme is `discoverly`.
 - EAS profiles are defined in `eas.json`.
+- Discover screen now includes a food detail modal (bottom sheet).
+- Modal actions trigger the same swipe API flow as main pass/like buttons.
 - Discovery tab pulls from `GET /api/foods/discover`.
 - Swipe actions post to `POST /api/swipe`.
 - Feed prefetch starts when only 3 cards remain.
