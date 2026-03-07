@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Link, useRouter } from "expo-router"
 import { Controller, useForm } from "react-hook-form"
-import { ScrollView, View } from "react-native"
+import { ScrollView } from "react-native"
 import { Button, Input, Typography } from "../../src/components"
 import { useAuthStore } from "../../src/store/useAuthStore"
 import { colors, spacing } from "../../src/theme/tokens"
@@ -10,6 +10,7 @@ import { type RegisterFormValues, registerSchema } from "../../src/validation/au
 export default function RegisterScreen() {
   const router = useRouter()
   const setToken = useAuthStore((state) => state.setToken)
+
   const {
     control,
     handleSubmit,
@@ -46,6 +47,7 @@ export default function RegisterScreen() {
       <Typography variant="body" color={colors.muted}>
         Create your account to start discovering meals instantly.
       </Typography>
+
       <Controller
         control={control}
         name="fullName"
@@ -61,6 +63,7 @@ export default function RegisterScreen() {
           />
         )}
       />
+
       <Controller
         control={control}
         name="email"
@@ -79,24 +82,33 @@ export default function RegisterScreen() {
           />
         )}
       />
+
       <Controller
         control={control}
         name="password"
         render={({ field: { onChange, onBlur, value } }) => (
-          <Input
-            label="Password"
-            placeholder="Minimum 8 characters"
-            secureTextEntry
-            autoCapitalize="none"
-            autoComplete="password-new"
-            textContentType="newPassword"
-            value={value}
-            onChangeText={onChange}
-            onBlur={onBlur}
-            error={errors.password?.message}
-          />
+          <>
+            <Input
+              label="Password"
+              placeholder="Minimum 8 characters"
+              secureTextEntry
+              autoCapitalize="none"
+              autoComplete="password-new"
+              textContentType="newPassword"
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              error={errors.password?.message}
+            />
+            {!errors.password?.message ? (
+              <Typography variant="caption" color={colors.muted}>
+                Minimum 8 characters
+              </Typography>
+            ) : null}
+          </>
         )}
       />
+
       <Controller
         control={control}
         name="confirmPassword"
@@ -113,6 +125,7 @@ export default function RegisterScreen() {
           />
         )}
       />
+
       <Button label="Sign Up" loading={isSubmitting} onPress={handleSubmit(onSubmit)} />
       <Link href="/(auth)/login">Back To Login</Link>
     </ScrollView>

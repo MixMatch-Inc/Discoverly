@@ -10,6 +10,7 @@ import { type LoginFormValues, loginSchema } from "../../src/validation/auth"
 export default function LoginScreen() {
   const router = useRouter()
   const setToken = useAuthStore((state) => state.setToken)
+
   const {
     control,
     handleSubmit,
@@ -43,6 +44,7 @@ export default function LoginScreen() {
       <Typography variant="body" color={colors.muted}>
         Sign in to continue matching with dishes around you.
       </Typography>
+
       <Controller
         control={control}
         name="email"
@@ -61,6 +63,7 @@ export default function LoginScreen() {
           />
         )}
       />
+
       <Controller
         control={control}
         name="password"
@@ -79,6 +82,7 @@ export default function LoginScreen() {
           />
         )}
       />
+
       <Button label="Sign In" loading={isSubmitting} onPress={handleSubmit(onSubmit)} />
       <Link href="/(auth)/register">Go To Register</Link>
     </View>
