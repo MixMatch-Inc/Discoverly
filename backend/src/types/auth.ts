@@ -1,4 +1,5 @@
-import type { UserRole } from "../models/user.model.js"
+export const userRoles = ["user", "restaurant", "admin"] as const
+export type UserRole = (typeof userRoles)[number]
 
 export type JwtPayload = {
   sub: string

@@ -73,3 +73,24 @@ Health endpoint:
 ```bash
 curl http://localhost:5000/api/health
 ```
+
+## Restaurant Menu CRUD
+
+Protected routes (JWT required):
+
+- `POST /api/restaurant/foods`
+- `PUT /api/restaurant/foods/:id`
+- `DELETE /api/restaurant/foods/:id`
+
+Authorization:
+
+- Allowed roles: `restaurant`, `admin`
+- Non-admin restaurants can only edit/delete their own items
+- Delete is soft delete (`is_active: false`)
+
+Create payload requires:
+
+- `name`
+- `price`
+- `description`
+- `image_url`

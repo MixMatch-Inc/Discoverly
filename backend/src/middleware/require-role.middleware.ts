@@ -1,4 +1,6 @@
 import type { NextFunction, Request, Response } from "express"
+
+export function requireRole(allowedRoles: UserRole[]) {
 import type { UserRole } from "../models/user.model.js"
 
 export function requireRole(roles: UserRole[]) {

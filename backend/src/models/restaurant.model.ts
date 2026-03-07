@@ -1,4 +1,4 @@
-import { InferSchemaType, Schema, model } from "mongoose"
+import { InferSchemaType, Schema, Types, model } from "mongoose"
 
 const geoPointSchema = new Schema(
   {
@@ -22,6 +22,11 @@ const geoPointSchema = new Schema(
 
 const restaurantSchema = new Schema(
   {
+    owner_user_id: {
+      type: Types.ObjectId,
+      required: true,
+      index: true,
+    },
     name: {
       type: String,
       required: true,
