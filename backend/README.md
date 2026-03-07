@@ -24,6 +24,7 @@ npm run dev
 
 ## Seed Data
 
+Run the seed script to create:
 Run:
 
 ```bash
@@ -34,6 +35,10 @@ This creates:
 
 - 1 dummy restaurant
 - 5 dummy food items
+
+```bash
+npm run seed
+```
 
 ## Validation Example
 
