@@ -74,3 +74,15 @@ test("GET /api/foods/discover does not apply swipe exclusion without user_id", a
   UserSwipeModel.distinct = originalDistinct
   RestaurantModel.aggregate = originalAggregate
 })
+
+test("GET /api/foods/discover returns 400 when user_id is not a valid ObjectId", async () => {
+  const app = createApp()
+
+  const response = await request(app).get(
+    "/api/foods/discover?longitude=-73.99&latitude=40.73&user_id=invalid-id",
+  )
+
+  assert.equal(response.status, 400)
+  assert.equal(response.body.error, "Bad Request")
+  assert.equal(response.body.message, "Invalid query parameters")
+})

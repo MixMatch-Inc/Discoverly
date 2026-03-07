@@ -1,13 +1,16 @@
 import { Router } from "express"
 import { z } from "zod"
-import type { PipelineStage } from "mongoose"
+import { Types, type PipelineStage } from "mongoose"
 import { RestaurantModel, UserSwipeModel } from "../models/index.js"
 
 const querySchema = z.object({
   longitude: z.coerce.number(),
   latitude: z.coerce.number(),
   cursor: z.string().optional(),
-  user_id: z.string().optional(),
+  user_id: z
+    .string()
+    .refine((value) => Types.ObjectId.isValid(value), "user_id must be a valid ObjectId")
+    .optional(),
 })
 
 const PAGE_SIZE = 10
@@ -47,7 +50,7 @@ foodsRouter.get("/discover", async (req, res, next) => {
     const skip = decodeCursor(query.cursor)
 
     const swipedFoodIds = query.user_id
-      ? await UserSwipeModel.distinct("food_id", { user_id: query.user_id })
+      ? await UserSwipeModel.distinct("food_id", { user_id: new Types.ObjectId(query.user_id) })
       : []
 
     const pipeline: PipelineStage[] = [
