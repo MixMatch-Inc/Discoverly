@@ -62,11 +62,4 @@ cp .env.example .env
 npm run start
 ```
 
-## CI Baseline
 
-Starter workflows are included for backend/mobile PR checks:
-
-- `.github/workflows/backend.yml`
-- `.github/workflows/mobile.yml`
-
-They run install + lint + typecheck and are intended to be extended as issues 1.1 and 1.2 progress.
