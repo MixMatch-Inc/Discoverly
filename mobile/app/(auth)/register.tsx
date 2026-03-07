@@ -9,7 +9,7 @@ import { type RegisterFormValues, registerSchema } from "../../src/validation/au
 
 export default function RegisterScreen() {
   const router = useRouter()
-  const setToken = useAuthStore((state) => state.setToken)
+  const login = useAuthStore((state) => state.login)
 
   const {
     control,
@@ -28,7 +28,14 @@ export default function RegisterScreen() {
 
   const onSubmit = async ({ email }: RegisterFormValues) => {
     const token = `session_${email.toLowerCase()}`
-    setToken(token)
+    await login({
+      token,
+      user: {
+        id: "660000000000000000000001",
+        email,
+        role: "user",
+      },
+    })
     router.replace("/(tabs)/discover")
   }
 
