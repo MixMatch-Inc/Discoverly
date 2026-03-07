@@ -1,12 +1,16 @@
 import { Router } from "express"
-import type { PipelineStage } from "mongoose"
+import { Types, type PipelineStage } from "mongoose"
 import { z } from "zod"
-import { RestaurantModel } from "../models/index.js"
+import { RestaurantModel, UserSwipeModel } from "../models/index.js"
 
 const querySchema = z.object({
   longitude: z.coerce.number(),
   latitude: z.coerce.number(),
   cursor: z.string().optional(),
+  user_id: z
+    .string()
+    .refine((value) => Types.ObjectId.isValid(value), "user_id must be a valid ObjectId")
+    .optional(),
 })
 
 const PAGE_SIZE = 10
@@ -49,6 +53,7 @@ export const foodsRouter = Router()
 foodsRouter.get("/discover", async (req, res, next) => {
   try {
     const query = querySchema.parse(req.query)
+
     let skip = 0
     try {
       skip = decodeCursor(query.cursor)
@@ -59,6 +64,10 @@ foodsRouter.get("/discover", async (req, res, next) => {
       })
       return
     }
+
+    const swipedFoodIds = query.user_id
+      ? await UserSwipeModel.distinct("food_id", { user_id: new Types.ObjectId(query.user_id) })
+      : []
 
     const pipeline: PipelineStage[] = [
       {
@@ -81,14 +90,11 @@ foodsRouter.get("/discover", async (req, res, next) => {
           as: "foods",
         },
       },
-      {
-        $unwind: "$foods",
-      },
-      {
-        $match: {
-          "foods.is_active": true,
-        },
-      },
+      { $unwind: "$foods" },
+      { $match: { "foods.is_active": true } },
+      ...(swipedFoodIds.length > 0
+        ? ([{ $match: { "foods._id": { $nin: swipedFoodIds } } }] as PipelineStage[])
+        : []),
       {
         $project: {
           food_id: "$foods._id",

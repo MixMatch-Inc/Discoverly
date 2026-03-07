@@ -87,6 +87,27 @@ Health endpoint:
 curl http://localhost:5000/api/health
 ```
 
+## Discovery Swipe Filtering
+
+`GET /api/foods/discover` supports filtering out previously swiped food items.
+
+Query params:
+
+- `longitude` (required)
+- `latitude` (required)
+- `cursor` (optional)
+- `user_id` (optional; when present, excludes swiped food for that user)
+
+`UserSwipe` model fields:
+
+- `user_id`
+- `food_id`
+- `action` (`like` | `pass`)
+- `timestamp`
+
+Index:
+
+- compound index on `{ user_id: 1, food_id: 1 }`
 ## Discovery Endpoint
 
 `GET /api/foods/discover`
