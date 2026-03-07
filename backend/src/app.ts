@@ -21,6 +21,12 @@ export function createApp() {
       limit: 100,
       standardHeaders: true,
       legacyHeaders: false,
+      handler: (_req, res) => {
+        res.status(429).json({
+          error: "Too Many Requests",
+          message: "Rate limit exceeded. Please try again later.",
+        })
+      },
     }),
   )
 
