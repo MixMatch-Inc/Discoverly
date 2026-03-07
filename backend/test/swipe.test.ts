@@ -8,21 +8,23 @@ test("POST /api/swipe with action=pass stores swipe and does not create cart ite
   const app = createApp()
 
   const originalFindById = FoodItemModel.findById
-  const originalSwipeCreate = UserSwipeModel.create
-  const originalCartCreate = CartItemModel.create
+  const originalSwipeUpsert = UserSwipeModel.findOneAndUpdate
+  const originalCartUpsert = CartItemModel.findOneAndUpdate
 
-  let cartCreateCalls = 0
+  let cartUpsertCalls = 0
 
   ;(FoodItemModel.findById as unknown as (...args: unknown[]) => Promise<unknown>) = async () => ({
     _id: "660000000000000000000100",
   })
-  ;(UserSwipeModel.create as unknown as (...args: unknown[]) => Promise<unknown>) = async () => ({
-    _id: "770000000000000000000001",
-  })
-  ;(CartItemModel.create as unknown as (...args: unknown[]) => Promise<unknown>) = async () => {
-    cartCreateCalls += 1
-    return {}
-  }
+  ;(UserSwipeModel.findOneAndUpdate as unknown as (...args: unknown[]) => Promise<unknown>) =
+    async () => ({
+      _id: "770000000000000000000001",
+    })
+  ;(CartItemModel.findOneAndUpdate as unknown as (...args: unknown[]) => Promise<unknown>) =
+    async () => {
+      cartUpsertCalls += 1
+      return {}
+    }
 
   const response = await request(app)
     .post("/api/swipe")
@@ -31,32 +33,34 @@ test("POST /api/swipe with action=pass stores swipe and does not create cart ite
 
   assert.equal(response.status, 201)
   assert.equal(response.body.swipe.action, "pass")
-  assert.equal(cartCreateCalls, 0)
+  assert.equal(cartUpsertCalls, 0)
 
   FoodItemModel.findById = originalFindById
-  UserSwipeModel.create = originalSwipeCreate
-  CartItemModel.create = originalCartCreate
+  UserSwipeModel.findOneAndUpdate = originalSwipeUpsert
+  CartItemModel.findOneAndUpdate = originalCartUpsert
 })
 
 test("POST /api/swipe with action=like stores swipe and creates cart item", async () => {
   const app = createApp()
 
   const originalFindById = FoodItemModel.findById
-  const originalSwipeCreate = UserSwipeModel.create
-  const originalCartCreate = CartItemModel.create
+  const originalSwipeUpsert = UserSwipeModel.findOneAndUpdate
+  const originalCartUpsert = CartItemModel.findOneAndUpdate
 
-  let cartCreateCalls = 0
+  let cartUpsertCalls = 0
 
   ;(FoodItemModel.findById as unknown as (...args: unknown[]) => Promise<unknown>) = async () => ({
     _id: "660000000000000000000100",
   })
-  ;(UserSwipeModel.create as unknown as (...args: unknown[]) => Promise<unknown>) = async () => ({
-    _id: "770000000000000000000001",
-  })
-  ;(CartItemModel.create as unknown as (...args: unknown[]) => Promise<unknown>) = async () => {
-    cartCreateCalls += 1
-    return {}
-  }
+  ;(UserSwipeModel.findOneAndUpdate as unknown as (...args: unknown[]) => Promise<unknown>) =
+    async () => ({
+      _id: "770000000000000000000001",
+    })
+  ;(CartItemModel.findOneAndUpdate as unknown as (...args: unknown[]) => Promise<unknown>) =
+    async () => {
+      cartUpsertCalls += 1
+      return {}
+    }
 
   const response = await request(app)
     .post("/api/swipe")
@@ -65,11 +69,11 @@ test("POST /api/swipe with action=like stores swipe and creates cart item", asyn
 
   assert.equal(response.status, 201)
   assert.equal(response.body.swipe.action, "like")
-  assert.equal(cartCreateCalls, 1)
+  assert.equal(cartUpsertCalls, 1)
 
   FoodItemModel.findById = originalFindById
-  UserSwipeModel.create = originalSwipeCreate
-  CartItemModel.create = originalCartCreate
+  UserSwipeModel.findOneAndUpdate = originalSwipeUpsert
+  CartItemModel.findOneAndUpdate = originalCartUpsert
 })
 
 test("POST /api/swipe returns 404 when foodId does not exist", async () => {

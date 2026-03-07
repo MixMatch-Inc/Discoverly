@@ -30,5 +30,10 @@ const cartItemSchema = new Schema(
   },
 )
 
+cartItemSchema.index(
+  { user_id: 1, food_id: 1, status: 1 },
+  { unique: true, partialFilterExpression: { status: "active" } },
+)
+
 export type CartItemDocument = InferSchemaType<typeof cartItemSchema>
 export const CartItemModel = model<CartItemDocument>("CartItem", cartItemSchema)

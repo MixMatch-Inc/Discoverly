@@ -51,20 +51,26 @@ swipeRouter.post("/", validateRequest({ body: swipeSchema }), async (req, res, n
     const userId = new Types.ObjectId(userIdRaw)
     const foodId = new Types.ObjectId(body.foodId)
 
-    const swipe = await UserSwipeModel.create({
-      user_id: userId,
-      food_id: foodId,
-      action: body.action,
-      timestamp: new Date(),
-    })
+    const swipe = await UserSwipeModel.findOneAndUpdate(
+      { user_id: userId, food_id: foodId },
+      { action: body.action, timestamp: new Date() },
+      {
+        upsert: true,
+        new: true,
+        setDefaultsOnInsert: true,
+      },
+    )
 
     if (body.action === "like") {
-      await CartItemModel.create({
-        user_id: userId,
-        food_id: foodId,
-        quantity: 1,
-        status: "active",
-      })
+      await CartItemModel.findOneAndUpdate(
+        { user_id: userId, food_id: foodId, status: "active" },
+        { $setOnInsert: { quantity: 1, status: "active" } },
+        {
+          upsert: true,
+          new: true,
+          setDefaultsOnInsert: true,
+        },
+      )
     }
 
     res.status(201).json({
