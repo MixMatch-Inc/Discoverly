@@ -14,11 +14,27 @@ export const swipeRouter = Router()
 swipeRouter.post("/", validateRequest({ body: swipeSchema }), async (req, res, next) => {
   try {
     const body = req.body as z.infer<typeof swipeSchema>
-    const userIdHeader = req.header("x-user-id")
-    if (!userIdHeader) {
+    const userIdRaw = req.user?.id ?? req.header("x-user-id")
+    if (!userIdRaw) {
       res.status(401).json({
         error: "Unauthorized",
-        message: "Missing x-user-id header",
+        message: "Missing authenticated user id",
+      })
+      return
+    }
+
+    if (!Types.ObjectId.isValid(body.foodId)) {
+      res.status(400).json({
+        error: "Bad Request",
+        message: "Invalid foodId",
+      })
+      return
+    }
+
+    if (!Types.ObjectId.isValid(userIdRaw)) {
+      res.status(400).json({
+        error: "Bad Request",
+        message: "Invalid user id",
       })
       return
     }
@@ -32,7 +48,7 @@ swipeRouter.post("/", validateRequest({ body: swipeSchema }), async (req, res, n
       return
     }
 
-    const userId = new Types.ObjectId(userIdHeader)
+    const userId = new Types.ObjectId(userIdRaw)
     const foodId = new Types.ObjectId(body.foodId)
 
     const swipe = await UserSwipeModel.create({

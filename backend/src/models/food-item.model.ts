@@ -4,11 +4,13 @@ const foodItemSchema = new Schema(
   {
     restaurant_id: {
       type: Types.ObjectId,
+      ref: "Restaurant",
       required: true,
       index: true,
     },
     owner_user_id: {
       type: Types.ObjectId,
+      ref: "User",
       required: true,
       index: true,
     },

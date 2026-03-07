@@ -27,3 +27,6 @@ npm run start
 
 - Deep link scheme is `discoverly`.
 - EAS profiles are defined in `eas.json`.
+- Do not hardcode secrets in source files. Keep sensitive values in EAS secrets
+  or CI environment variables.
+- Only `EXPO_PUBLIC_*` variables should be exposed to client runtime code.
