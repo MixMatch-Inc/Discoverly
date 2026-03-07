@@ -40,3 +40,21 @@ Health endpoint:
 ```bash
 curl http://localhost:5000/api/health
 ```
+
+## Discovery Endpoint
+
+`GET /api/foods/discover`
+
+Query params:
+
+- `longitude` (number, required)
+- `latitude` (number, required)
+- `cursor` (string, optional)
+
+Behavior:
+
+- Uses MongoDB geospatial query with a 10km radius
+- Sorts results by nearest restaurant first
+- Returns up to 10 items per page
+- Includes `distanceMeters` on each item
+- Returns next `cursor` when additional items exist
