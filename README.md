@@ -48,6 +48,12 @@ Or run backend + Mongo together from repo root:
 docker-compose up --build
 ```
 
+Smoke test after containers are up:
+
+```bash
+curl http://localhost:5000/api/health
+```
+
 ### 3) Run Mobile
 
 ```bash
@@ -66,12 +72,3 @@ The backend exposes:
 - storage target: S3
 
 See `/backend/.env.example` for required AWS variables.
-
-## CI Baseline
-
-Starter workflows are included for backend/mobile PR checks:
-
-- `.github/workflows/backend.yml`
-- `.github/workflows/mobile.yml`
-
-They run install + lint + typecheck and are intended to be extended as issues 1.1 and 1.2 progress.
