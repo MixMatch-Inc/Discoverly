@@ -14,7 +14,7 @@ export default function RegisterScreen() {
       }}
     >
       <Text style={{ fontSize: 28, fontWeight: "700" }}>Create Account</Text>
-      <Text>Phase 1 registration UI scaffold.</Text>
+      <Text>Create your account and start matching meals instantly.</Text>
       <Link href="/(auth)/login">Back To Login</Link>
     </View>
   )
