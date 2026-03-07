@@ -48,6 +48,12 @@ Or run backend + Mongo together from repo root:
 docker-compose up --build
 ```
 
+Smoke test after containers are up:
+
+```bash
+curl http://localhost:5000/api/health
+```
+
 ### 3) Run Mobile
 
 ```bash
