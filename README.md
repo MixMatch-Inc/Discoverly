@@ -56,6 +56,17 @@ cp .env.example .env
 npm run start
 ```
 
+## Backend Upload Service
+
+The backend exposes:
+
+- `POST /api/upload` (multipart form-data)
+- file field name: `file`
+- max file size: `5MB`
+- storage target: S3
+
+See `/backend/.env.example` for required AWS variables.
+
 ## CI Baseline
 
 Starter workflows are included for backend/mobile PR checks:
