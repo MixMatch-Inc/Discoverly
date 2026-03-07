@@ -21,7 +21,6 @@ export function validateRequest(schema: RequestSchema): RequestHandler {
       if (schema.params) {
         req.params = schema.params.parse(req.params)
       }
-
       next()
     } catch (error) {
       if (error instanceof ZodError) {
@@ -36,7 +35,6 @@ export function validateRequest(schema: RequestSchema): RequestHandler {
         })
         return
       }
-
       next(error)
     }
   }

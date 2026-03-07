@@ -37,6 +37,7 @@ const foodItemSchema = new Schema(
     is_active: {
       type: Boolean,
       default: true,
+      index: true,
     },
   },
   {
