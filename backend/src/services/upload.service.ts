@@ -3,8 +3,15 @@ import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3"
 import { env } from "../config/env.js"
 
 function ensureS3Config() {
-  if (!env.AWS_REGION || !env.AWS_ACCESS_KEY_ID || !env.AWS_SECRET_ACCESS_KEY || !env.AWS_S3_BUCKET) {
-    throw new Error("S3 config missing. Set AWS_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_S3_BUCKET.")
+  if (
+    !env.AWS_REGION ||
+    !env.AWS_ACCESS_KEY_ID ||
+    !env.AWS_SECRET_ACCESS_KEY ||
+    !env.AWS_S3_BUCKET
+  ) {
+    throw new Error(
+      "S3 config missing. Set AWS_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_S3_BUCKET.",
+    )
   }
 }
 
@@ -26,7 +33,9 @@ function getPublicUrl(key: string): string {
   return `https://${env.AWS_S3_BUCKET}.s3.${env.AWS_REGION}.amazonaws.com/${key}`
 }
 
-export async function uploadImageToS3(file: Express.Multer.File): Promise<{ url: string; key: string }> {
+export async function uploadImageToS3(
+  file: Express.Multer.File,
+): Promise<{ url: string; key: string }> {
   const extension = file.originalname.includes(".") ? file.originalname.split(".").pop() : "bin"
   const key = `uploads/${new Date().toISOString().slice(0, 10)}/${randomUUID()}.${extension}`
 
