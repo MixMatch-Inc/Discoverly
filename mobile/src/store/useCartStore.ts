@@ -1,12 +1,12 @@
 import { create } from "zustand"
 
-type CartItem = {
+export type CartItem = {
   id: string
   name: string
   price: number
 }
 
-type CartState = {
+export type CartState = {
   items: CartItem[]
   addItem: (item: CartItem) => void
   removeItem: (id: string) => void

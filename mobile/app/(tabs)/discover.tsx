@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   ActivityIndicator,
   Animated,
+  Dimensions,
   Pressable,
   StyleSheet,
   Text,
@@ -17,19 +18,25 @@ const DISCOVERY_COORDINATES = {
 }
 
 const PREFETCH_THRESHOLD = 3
+const SWIPE_OUT_DISTANCE = Dimensions.get("window").width + 80
 
 export default function DiscoverScreen() {
   const [cards, setCards] = useState<DiscoverItem[]>([])
   const [cursor, setCursor] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [prefetching, setPrefetching] = useState(false)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [selectedCard, setSelectedCard] = useState<DiscoverItem | null>(null)
   const [modalVisible, setModalVisible] = useState(false)
+
   const modalAnim = useRef(new Animated.Value(0)).current
+  const topCardX = useRef(new Animated.Value(0)).current
 
   const prefetchImages = useCallback(async (items: DiscoverItem[]) => {
     const urls = items.map((item) => item.imageUrl).filter(Boolean)
-    if (urls.length > 0) await ExpoImage.prefetch(urls)
+    if (urls.length > 0) {
+      await ExpoImage.prefetch(urls)
+    }
   }, [])
 
   const loadPage = useCallback(
@@ -38,29 +45,55 @@ export default function DiscoverScreen() {
         ...DISCOVERY_COORDINATES,
         cursor: nextCursor,
       })
+
       await prefetchImages(result.items)
       setCards((prev) => (append ? [...prev, ...result.items] : result.items))
       setCursor(result.cursor)
+      setLoadError(null)
     },
     [prefetchImages],
   )
 
+  const loadInitialPage = useCallback(async () => {
+    setLoading(true)
+    try {
+      await loadPage(null, false)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to load discover feed"
+      setLoadError(message)
+      setCards([])
+      setCursor(null)
+    } finally {
+      setLoading(false)
+    }
+  }, [loadPage])
+
   useEffect(() => {
+    let active = true
+
     ;(async () => {
-      try {
-        await loadPage(null, false)
-      } finally {
-        setLoading(false)
+      await loadInitialPage()
+      if (!active) {
+        return
       }
     })()
-  }, [loadPage])
+
+    return () => {
+      active = false
+    }
+  }, [loadInitialPage])
 
   const maybePrefetchNext = useCallback(
     async (remaining: number) => {
-      if (remaining > PREFETCH_THRESHOLD || !cursor || prefetching) return
+      if (remaining > PREFETCH_THRESHOLD || !cursor || prefetching) {
+        return
+      }
+
       setPrefetching(true)
       try {
         await loadPage(cursor, true)
+      } catch {
+        // Keep current cards available if prefetch fails.
       } finally {
         setPrefetching(false)
       }
@@ -69,15 +102,23 @@ export default function DiscoverScreen() {
   )
 
   const hideModal = useCallback(() => {
-    Animated.timing(modalAnim, {
-      toValue: 0,
-      duration: 180,
-      useNativeDriver: true,
-    }).start(() => {
-      setModalVisible(false)
-      setSelectedCard(null)
+    return new Promise<void>((resolve) => {
+      if (!modalVisible) {
+        resolve()
+        return
+      }
+
+      Animated.timing(modalAnim, {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: true,
+      }).start(() => {
+        setModalVisible(false)
+        setSelectedCard(null)
+        resolve()
+      })
     })
-  }, [modalAnim])
+  }, [modalAnim, modalVisible])
 
   const showModal = useCallback(
     (card: DiscoverItem) => {
@@ -93,14 +134,28 @@ export default function DiscoverScreen() {
     [modalAnim],
   )
 
+  const animateSwipeOut = useCallback((direction: 1 | -1) => {
+    return new Promise<void>((resolve) => {
+      Animated.timing(topCardX, {
+        toValue: direction * SWIPE_OUT_DISTANCE,
+        duration: 230,
+        useNativeDriver: true,
+      }).start(() => {
+        topCardX.setValue(0)
+        resolve()
+      })
+    })
+  }, [topCardX])
+
   const handleSwipe = useCallback(
     async (action: "like" | "pass") => {
       const top = cards[0]
-      if (!top) return
-
-      if (selectedCard && top.id === selectedCard.id) {
-        hideModal()
+      if (!top) {
+        return
       }
+
+      await hideModal()
+      await animateSwipeOut(action === "like" ? 1 : -1)
 
       setCards((prev) => prev.slice(1))
       void sendSwipe({ foodId: top.id, action }).catch(() => {})
@@ -108,7 +163,7 @@ export default function DiscoverScreen() {
       const remaining = cards.length - 1
       await maybePrefetchNext(remaining)
     },
-    [cards, maybePrefetchNext, selectedCard, hideModal],
+    [animateSwipeOut, cards, hideModal, maybePrefetchNext],
   )
 
   const stack = useMemo(() => cards.slice(0, 3), [cards])
@@ -117,9 +172,15 @@ export default function DiscoverScreen() {
     inputRange: [0, 1],
     outputRange: [320, 0],
   })
+
   const modalBackdropOpacity = modalAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [0, 0.45],
+  })
+
+  const topCardRotate = topCardX.interpolate({
+    inputRange: [-SWIPE_OUT_DISTANCE, 0, SWIPE_OUT_DISTANCE],
+    outputRange: ["-10deg", "0deg", "10deg"],
   })
 
   if (loading) {
@@ -127,6 +188,18 @@ export default function DiscoverScreen() {
       <View style={styles.center}>
         <ActivityIndicator />
         <Text style={styles.caption}>Loading discovery feed...</Text>
+      </View>
+    )
+  }
+
+  if (loadError) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.title}>Could not load discovery feed</Text>
+        <Text style={styles.caption}>{loadError}</Text>
+        <Pressable style={[styles.button, styles.retryBtn]} onPress={() => void loadInitialPage()}>
+          <Text style={styles.buttonText}>Retry</Text>
+        </Pressable>
       </View>
     )
   }
@@ -146,28 +219,40 @@ export default function DiscoverScreen() {
         {stack
           .map((item, index) => ({ item, index }))
           .reverse()
-          .map(({ item, index }) => (
-            <Pressable
-              key={item.id}
-              onPress={() => showModal(item)}
-              style={[
-                styles.card,
-                {
-                  top: index * 10,
-                  transform: [{ scale: 1 - index * 0.03 }],
-                },
-              ]}
-            >
-              <ExpoImage source={item.imageUrl} style={styles.image} contentFit="cover" />
-              <View style={styles.cardBody}>
-                <Text style={styles.foodName}>{item.name}</Text>
-                <Text style={styles.meta}>{item.restaurantName}</Text>
-                <Text style={styles.meta}>
-                  ${item.price.toFixed(2)} • {(item.distanceMeters / 1000).toFixed(1)}km
-                </Text>
-              </View>
-            </Pressable>
-          ))}
+          .map(({ item, index }) => {
+            const isTop = index === 0
+            const CardContainer = isTop ? Animated.View : View
+
+            return (
+              <CardContainer
+                key={item.id}
+                style={[
+                  styles.card,
+                  {
+                    top: index * 10,
+                    transform: [
+                      { scale: 1 - index * 0.03 },
+                      ...(isTop ? [{ translateX: topCardX }, { rotate: topCardRotate }] : []),
+                    ],
+                  },
+                ]}
+              >
+                <Pressable style={styles.cardTap} onPress={() => showModal(item)}>
+                  <ExpoImage source={item.imageUrl} style={styles.image} contentFit="cover" />
+                  <View style={styles.cardBody}>
+                    <Text style={styles.foodName}>{item.name}</Text>
+                    <Text style={styles.meta}>{item.restaurantName}</Text>
+                    <Text style={styles.meta}>
+                      ${item.price.toFixed(2)} • {(item.distanceMeters / 1000).toFixed(1)}km
+                    </Text>
+                  </View>
+                </Pressable>
+                <Pressable style={styles.infoButton} onPress={() => showModal(item)}>
+                  <Text style={styles.infoButtonText}>Info</Text>
+                </Pressable>
+              </CardContainer>
+            )
+          })}
       </View>
 
       <View style={styles.actions}>
@@ -184,9 +269,15 @@ export default function DiscoverScreen() {
       <FoodDetailsSheet
         visible={modalVisible}
         card={selectedCard}
-        onClose={hideModal}
-        onSwipePass={() => void handleSwipe("pass")}
-        onSwipeLike={() => void handleSwipe("like")}
+        onClose={() => {
+          void hideModal()
+        }}
+        onSwipePass={() => {
+          void handleSwipe("pass")
+        }}
+        onSwipeLike={() => {
+          void handleSwipe("like")
+        }}
         translateY={modalTranslateY}
         backdropOpacity={modalBackdropOpacity}
       />
@@ -236,6 +327,9 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 6,
   },
+  cardTap: {
+    flex: 1,
+  },
   image: {
     width: "100%",
     height: "78%",
@@ -250,6 +344,20 @@ const styles = StyleSheet.create({
   },
   meta: {
     color: "#555",
+  },
+  infoButton: {
+    position: "absolute",
+    right: 12,
+    top: 12,
+    backgroundColor: "rgba(17,24,39,0.75)",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 10,
+  },
+  infoButtonText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 12,
   },
   actions: {
     flexDirection: "row",
@@ -266,6 +374,10 @@ const styles = StyleSheet.create({
   },
   likeBtn: {
     backgroundColor: "#2E7D32",
+  },
+  retryBtn: {
+    marginTop: 12,
+    backgroundColor: "#1D4ED8",
   },
   buttonText: {
     color: "#fff",

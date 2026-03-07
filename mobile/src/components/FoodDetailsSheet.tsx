@@ -13,6 +13,7 @@ type FoodDetailsSheetProps = {
 
 export function FoodDetailsSheet(props: FoodDetailsSheetProps) {
   const { visible, card, onClose, onSwipePass, onSwipeLike, translateY, backdropOpacity } = props
+  const XLM_PER_USD = 4.2
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
@@ -33,7 +34,8 @@ export function FoodDetailsSheet(props: FoodDetailsSheetProps) {
             <Text style={styles.modalTitle}>{card.name}</Text>
             <Text style={styles.modalMeta}>{card.restaurantName}</Text>
             <Text style={styles.modalMeta}>
-              ${card.price.toFixed(2)} • {(card.distanceMeters / 1000).toFixed(1)}km
+              ${card.price.toFixed(2)} • {(card.price * XLM_PER_USD).toFixed(2)} XLM •{" "}
+              {(card.distanceMeters / 1000).toFixed(1)}km
             </Text>
             <Text style={styles.modalBody}>{card.description}</Text>
 

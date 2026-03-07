@@ -21,7 +21,11 @@ type DiscoverResponse = {
 
 function getAuthHeaders() {
   const token = useAuthStore.getState().token
-  return token ? { Authorization: `Bearer ${token}` } : {}
+  const headers: Record<string, string> = {}
+  if (token) {
+    headers.Authorization = `Bearer ${token}`
+  }
+  return headers
 }
 
 export async function fetchDiscoverFeed(params: {
@@ -34,7 +38,9 @@ export async function fetchDiscoverFeed(params: {
     latitude: String(params.latitude),
   })
 
-  if (params.cursor) query.set("cursor", params.cursor)
+  if (params.cursor) {
+    query.set("cursor", params.cursor)
+  }
 
   const response = await fetch(`${API_BASE_URL}/api/foods/discover?${query.toString()}`, {
     headers: {
