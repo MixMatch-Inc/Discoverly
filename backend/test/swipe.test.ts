@@ -76,7 +76,8 @@ test("POST /api/swipe returns 404 when foodId does not exist", async () => {
   const app = createApp()
   const originalFindById = FoodItemModel.findById
 
-  ;(FoodItemModel.findById as unknown as (...args: unknown[]) => Promise<unknown>) = async () => null
+  ;(FoodItemModel.findById as unknown as (...args: unknown[]) => Promise<unknown>) = async () =>
+    null
 
   const response = await request(app)
     .post("/api/swipe")
