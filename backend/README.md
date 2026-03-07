@@ -108,6 +108,23 @@ Query params:
 Index:
 
 - compound index on `{ user_id: 1, food_id: 1 }`
+## Discovery Endpoint
+
+`GET /api/foods/discover`
+
+Query params:
+
+- `longitude` (number, required)
+- `latitude` (number, required)
+- `cursor` (string, optional)
+
+Behavior:
+
+- Uses MongoDB geospatial query with a 10km radius
+- Sorts results by nearest restaurant first
+- Returns up to 10 items per page
+- Includes `distanceMeters` on each item
+- Returns next `cursor` when additional items exist
 
 ## Swipe Endpoint
 

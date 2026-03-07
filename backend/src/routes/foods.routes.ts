@@ -1,6 +1,6 @@
 import { Router } from "express"
-import { z } from "zod"
 import { Types, type PipelineStage } from "mongoose"
+import { z } from "zod"
 import { RestaurantModel, UserSwipeModel } from "../models/index.js"
 
 const querySchema = z.object({
@@ -28,13 +28,19 @@ type DiscoveryRow = {
 }
 
 function decodeCursor(cursor?: string): number {
-  if (!cursor) return 0
+  if (!cursor) {
+    return 0
+  }
+
   try {
     const raw = Buffer.from(cursor, "base64").toString("utf8")
     const parsed = Number(raw)
-    return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      throw new Error("invalid-cursor")
+    }
+    return parsed
   } catch {
-    return 0
+    throw new Error("invalid-cursor")
   }
 }
 
@@ -47,7 +53,17 @@ export const foodsRouter = Router()
 foodsRouter.get("/discover", async (req, res, next) => {
   try {
     const query = querySchema.parse(req.query)
-    const skip = decodeCursor(query.cursor)
+
+    let skip = 0
+    try {
+      skip = decodeCursor(query.cursor)
+    } catch {
+      res.status(400).json({
+        error: "Bad Request",
+        message: "Invalid cursor",
+      })
+      return
+    }
 
     const swipedFoodIds = query.user_id
       ? await UserSwipeModel.distinct("food_id", { user_id: new Types.ObjectId(query.user_id) })
