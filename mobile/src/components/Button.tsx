@@ -37,7 +37,7 @@ function getContainerStyle(variant: ButtonVariant, disabled: boolean): ViewStyle
 
 function getLabelColor(variant: ButtonVariant, disabled: boolean): string {
   if (disabled) {
-    return colors.surface
+    return variant === "outlined" ? colors.muted : colors.surface
   }
 
   if (variant === "outlined") {
