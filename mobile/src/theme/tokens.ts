@@ -6,6 +6,7 @@ export const colors = {
   text: "#1D1D1F",
   muted: "#6B7280",
   border: "#E5E7EB",
+  success: "#16A34A",
   error: "#D92D20",
   disabled: "#C9CDD4",
   onPrimary: "#FFFFFF",
