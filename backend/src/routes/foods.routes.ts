@@ -1,4 +1,5 @@
 import { Router } from "express"
+import type { PipelineStage } from "mongoose"
 import { z } from "zod"
 import { RestaurantModel } from "../models/index.js"
 
@@ -31,11 +32,11 @@ function decodeCursor(cursor?: string): number {
     const raw = Buffer.from(cursor, "base64").toString("utf8")
     const parsed = Number(raw)
     if (!Number.isFinite(parsed) || parsed < 0) {
-      return 0
+      throw new Error("invalid-cursor")
     }
     return parsed
   } catch {
-    return 0
+    throw new Error("invalid-cursor")
   }
 }
 
@@ -48,9 +49,18 @@ export const foodsRouter = Router()
 foodsRouter.get("/discover", async (req, res, next) => {
   try {
     const query = querySchema.parse(req.query)
-    const skip = decodeCursor(query.cursor)
+    let skip = 0
+    try {
+      skip = decodeCursor(query.cursor)
+    } catch {
+      res.status(400).json({
+        error: "Bad Request",
+        message: "Invalid cursor",
+      })
+      return
+    }
 
-    const pipeline = [
+    const pipeline: PipelineStage[] = [
       {
         $geoNear: {
           near: {
@@ -91,6 +101,7 @@ foodsRouter.get("/discover", async (req, res, next) => {
           distance_meters: 1,
         },
       },
+      { $sort: { distance_meters: 1, food_id: 1 } },
       { $skip: skip },
       { $limit: PAGE_SIZE + 1 },
     ]

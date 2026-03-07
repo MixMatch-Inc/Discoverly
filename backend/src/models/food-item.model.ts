@@ -10,6 +10,7 @@ const foodItemSchema = new Schema(
     },
     owner_user_id: {
       type: Types.ObjectId,
+      ref: "User",
       required: true,
       index: true,
     },

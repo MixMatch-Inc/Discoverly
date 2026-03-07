@@ -11,6 +11,11 @@ const envSchema = z.object({
   STELLAR_NETWORK: z.enum(["testnet", "public"]).default("testnet"),
   STELLAR_HORIZON_URL: z.string().url().optional(),
   STELLAR_DESTINATION_ADDRESS: z.string().optional(),
+  AWS_REGION: z.string().optional(),
+  AWS_ACCESS_KEY_ID: z.string().optional(),
+  AWS_SECRET_ACCESS_KEY: z.string().optional(),
+  AWS_S3_BUCKET: z.string().optional(),
+  AWS_S3_PUBLIC_BASE_URL: z.string().url().optional(),
 })
 
 const parsed = envSchema.safeParse(process.env)
