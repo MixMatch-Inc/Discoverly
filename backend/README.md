@@ -62,6 +62,7 @@ Legacy NestJS code is archived under `/legacy/nest-backend`.
 - Content-Type: `multipart/form-data`
 - Field name: `file`
 - Max file size: `5MB`
+- Allowed image types: `jpeg`, `png`, `webp`
 - Response: `{ ok: true, url: "https://..." }`
 
 Required environment variables:

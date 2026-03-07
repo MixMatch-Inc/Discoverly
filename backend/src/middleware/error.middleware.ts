@@ -10,6 +10,14 @@ export function errorHandler(err: unknown, _req: Request, res: Response, next: N
     })
     return
   }
+
+  if (err instanceof Error && err.message.startsWith("Unsupported file type.")) {
+    res.status(400).json({
+      error: "Bad Request",
+      message: err.message,
+    })
+    return
+  }
   const message = err instanceof Error ? err.message : "Internal Server Error"
   res.status(500).json({
     error: "Internal Server Error",
