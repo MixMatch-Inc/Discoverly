@@ -1,21 +1,89 @@
-import { Link } from "expo-router"
-import { Text, View } from "react-native"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Link, useRouter } from "expo-router"
+import { Controller, useForm } from "react-hook-form"
+import { View } from "react-native"
+import { Button, Input, Typography } from "../../src/components"
+import { useAuthStore } from "../../src/store/useAuthStore"
+import { colors, spacing } from "../../src/theme/tokens"
+import { type LoginFormValues, loginSchema } from "../../src/validation/auth"
 
 export default function LoginScreen() {
+  const router = useRouter()
+  const setToken = useAuthStore((state) => state.setToken)
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+    mode: "onBlur",
+  })
+
+  const onSubmit = async ({ email }: LoginFormValues) => {
+    const token = `session_${email.toLowerCase()}`
+    setToken(token)
+    router.replace("/(tabs)/discover")
+  }
+
   return (
     <View
       style={{
         flex: 1,
-        alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "#FFFFFF",
-        gap: 12,
-        padding: 24,
+        backgroundColor: colors.background,
+        gap: spacing.md,
+        padding: spacing.lg,
       }}
     >
-      <Text style={{ fontSize: 28, fontWeight: "700" }}>Welcome Back</Text>
-      <Text>Phase 1 auth UI scaffold.</Text>
-      <Link href="/(tabs)/discover">Mock Sign In</Link>
+      <Typography variant="h1">Welcome Back</Typography>
+      <Typography variant="body" color={colors.muted}>
+        Sign in to continue matching with dishes around you.
+      </Typography>
+
+      <Controller
+        control={control}
+        name="email"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <Input
+            label="Email Address"
+            placeholder="hello@discoverly.app"
+            autoCapitalize="none"
+            keyboardType="email-address"
+            autoComplete="email"
+            textContentType="emailAddress"
+            value={value}
+            onChangeText={onChange}
+            onBlur={onBlur}
+            error={errors.email?.message}
+          />
+        )}
+      />
+
+      <Controller
+        control={control}
+        name="password"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <Input
+            label="Password"
+            placeholder="Enter your password"
+            secureTextEntry
+            autoCapitalize="none"
+            autoComplete="password"
+            textContentType="password"
+            value={value}
+            onChangeText={onChange}
+            onBlur={onBlur}
+            error={errors.password?.message}
+          />
+        )}
+      />
+
+      <Button label="Sign In" loading={isSubmitting} onPress={handleSubmit(onSubmit)} />
       <Link href="/(auth)/register">Go To Register</Link>
     </View>
   )

@@ -2,11 +2,11 @@ import type { ReactNode } from "react"
 import { Text, type TextStyle } from "react-native"
 import { colors, typography } from "../theme/tokens"
 
-type TypographyVariant = keyof typeof typography
+type Variant = keyof typeof typography
 
 type TypographyProps = {
   children: ReactNode
-  variant?: TypographyVariant
+  variant?: Variant
   color?: string
   style?: TextStyle
 }
