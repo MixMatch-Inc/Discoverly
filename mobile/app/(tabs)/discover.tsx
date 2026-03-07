@@ -15,6 +15,7 @@ export default function DiscoverScreen() {
   const [cursor, setCursor] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [prefetching, setPrefetching] = useState(false)
+  const [loadError, setLoadError] = useState<string | null>(null)
 
   const prefetchImages = useCallback(async (items: DiscoverItem[]) => {
     const urls = items.map((item) => item.imageUrl).filter(Boolean)
@@ -34,27 +35,39 @@ export default function DiscoverScreen() {
 
       setCards((prev) => (append ? [...prev, ...result.items] : result.items))
       setCursor(result.cursor)
+      setLoadError(null)
     },
     [prefetchImages],
   )
+
+  const loadInitialPage = useCallback(async () => {
+    setLoading(true)
+    try {
+      await loadPage(null, false)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to load discover feed"
+      setLoadError(message)
+      setCards([])
+      setCursor(null)
+    } finally {
+      setLoading(false)
+    }
+  }, [loadPage])
 
   useEffect(() => {
     let active = true
 
     ;(async () => {
-      try {
-        await loadPage(null, false)
-      } finally {
-        if (active) {
-          setLoading(false)
-        }
+      await loadInitialPage()
+      if (!active) {
+        return
       }
     })()
 
     return () => {
       active = false
     }
-  }, [loadPage])
+  }, [loadInitialPage])
 
   const maybePrefetchNext = useCallback(
     async (remaining: number) => {
@@ -65,6 +78,8 @@ export default function DiscoverScreen() {
       setPrefetching(true)
       try {
         await loadPage(cursor, true)
+      } catch {
+        // Keep current stack when prefetch fails; user can continue swiping.
       } finally {
         setPrefetching(false)
       }
@@ -95,6 +110,18 @@ export default function DiscoverScreen() {
       <View style={styles.center}>
         <ActivityIndicator />
         <Text style={styles.caption}>Loading discovery feed...</Text>
+      </View>
+    )
+  }
+
+  if (loadError) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.title}>Could not load discovery feed</Text>
+        <Text style={styles.caption}>{loadError}</Text>
+        <Pressable style={[styles.button, styles.retryBtn]} onPress={() => void loadInitialPage()}>
+          <Text style={styles.buttonText}>Retry</Text>
+        </Pressable>
       </View>
     )
   }
@@ -222,6 +249,10 @@ const styles = StyleSheet.create({
   },
   likeBtn: {
     backgroundColor: "#2E7D32",
+  },
+  retryBtn: {
+    marginTop: 12,
+    backgroundColor: "#1D4ED8",
   },
   buttonText: {
     color: "#fff",
