@@ -29,7 +29,7 @@ const userSwipeSchema = new Schema(
   },
 )
 
-userSwipeSchema.index({ user_id: 1, food_id: 1 })
+userSwipeSchema.index({ user_id: 1, food_id: 1 }, { unique: true })
 
 export type UserSwipeDocument = InferSchemaType<typeof userSwipeSchema>
 export const UserSwipeModel = model<UserSwipeDocument>("UserSwipe", userSwipeSchema)

@@ -22,10 +22,56 @@ npm install
 npm run dev
 ```
 
+## Seed Data
+
+Run the seed script to create:
+
+```bash
+npm run seed
+```
+
+This creates:
+
+- 1 dummy restaurant
+- 5 dummy food items
+
+## Validation Example
+
+`POST /api/ping` validates request bodies with Zod.
+
+Valid payload:
+
+```json
+{
+  "message": "hello",
+  "timestamp": "2026-03-07T10:00:00.000Z"
+}
+```
+
+Invalid payloads return a structured `400` response with a `details` array.
+
 ## Scope
 
 This folder is the target for Phase 1 and Phase 2 backend issues.
 Legacy NestJS code is archived under `/legacy/nest-backend`.
+
+## Upload Endpoint
+
+`POST /api/upload`
+
+- Content-Type: `multipart/form-data`
+- Field name: `file`
+- Max file size: `5MB`
+- Allowed image types: `jpeg`, `png`, `webp`
+- Response: `{ ok: true, url: "https://..." }`
+
+Required environment variables:
+
+- `AWS_REGION`
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `AWS_S3_BUCKET`
+- `AWS_S3_PUBLIC_BASE_URL` (optional)
 
 ## Docker
 
@@ -62,3 +108,48 @@ Query params:
 Index:
 
 - compound index on `{ user_id: 1, food_id: 1 }`
+
+## Swipe Endpoint
+
+`POST /api/swipe`
+
+Payload:
+
+```json
+{
+  "foodId": "660000000000000000000100",
+  "action": "like"
+}
+```
+
+Headers:
+
+- `x-user-id`: current user id (temporary until full JWT auth integration)
+
+Behavior:
+
+- Always writes to `UserSwipe`
+- `pass`: no cart mutation
+- `like`: also creates an `active` `CartItem`
+- Returns `404` if `foodId` does not exist
+
+## Restaurant Menu CRUD
+
+Protected routes (JWT required):
+
+- `POST /api/restaurant/foods`
+- `PUT /api/restaurant/foods/:id`
+- `DELETE /api/restaurant/foods/:id`
+
+Authorization:
+
+- Allowed roles: `restaurant`, `admin`
+- Non-admin restaurants can only edit/delete their own items
+- Delete is soft delete (`is_active: false`)
+
+Create payload requires:
+
+- `name`
+- `price`
+- `description`
+- `image_url`

@@ -1,5 +1,6 @@
 import { Router } from "express"
 import { z } from "zod"
+import type { PipelineStage } from "mongoose"
 import { RestaurantModel, UserSwipeModel } from "../models/index.js"
 
 const querySchema = z.object({
@@ -49,7 +50,7 @@ foodsRouter.get("/discover", async (req, res, next) => {
       ? await UserSwipeModel.distinct("food_id", { user_id: query.user_id })
       : []
 
-    const pipeline = [
+    const pipeline: PipelineStage[] = [
       {
         $geoNear: {
           near: {
@@ -72,7 +73,9 @@ foodsRouter.get("/discover", async (req, res, next) => {
       },
       { $unwind: "$foods" },
       { $match: { "foods.is_active": true } },
-      ...(swipedFoodIds.length > 0 ? [{ $match: { "foods._id": { $nin: swipedFoodIds } } }] : []),
+      ...(swipedFoodIds.length > 0
+        ? ([{ $match: { "foods._id": { $nin: swipedFoodIds } } }] as PipelineStage[])
+        : []),
       {
         $project: {
           food_id: "$foods._id",
