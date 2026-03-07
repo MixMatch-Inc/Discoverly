@@ -8,11 +8,6 @@ const foodItemSchema = new Schema(
       required: true,
       index: true,
     },
-    owner_user_id: {
-      type: Types.ObjectId,
-      required: true,
-      index: true,
-    },
     name: {
       type: String,
       required: true,
@@ -36,7 +31,6 @@ const foodItemSchema = new Schema(
     is_active: {
       type: Boolean,
       default: true,
-      index: true,
     },
   },
   {

@@ -20,6 +20,10 @@ export function authenticate(req: Request, res: Response, next: NextFunction): v
     req.user = {
       id: payload.sub,
       role: payload.role,
+    const decoded = jwt.verify(token, env.JWT_SECRET) as JwtPayload
+    req.user = {
+      id: decoded.sub,
+      role: decoded.role,
     }
     next()
   } catch {
