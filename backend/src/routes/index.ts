@@ -1,4 +1,5 @@
 import { Router } from "express"
+import { foodsRouter } from "./foods.routes.js"
 import { authRouter } from "./auth.routes.js"
 import { healthRouter } from "./health.routes.js"
 import { uploadRouter } from "./upload.routes.js"
@@ -9,6 +10,7 @@ import { pingRouter } from "./ping.routes.js"
 export const apiRouter = Router()
 
 apiRouter.use("/health", healthRouter)
+apiRouter.use("/foods", foodsRouter)
 apiRouter.use("/upload", uploadRouter)
 apiRouter.use("/swipe", swipeRouter)
 apiRouter.use("/restaurant/foods", restaurantFoodsRouter)
