@@ -40,11 +40,14 @@ export default function DiscoverScreen() {
 
   useEffect(() => {
     let active = true
+
     ;(async () => {
       try {
         await loadPage(null, false)
       } finally {
-        if (active) setLoading(false)
+        if (active) {
+          setLoading(false)
+        }
       }
     })()
 
@@ -58,6 +61,7 @@ export default function DiscoverScreen() {
       if (remaining > PREFETCH_THRESHOLD || !cursor || prefetching) {
         return
       }
+
       setPrefetching(true)
       try {
         await loadPage(cursor, true)
@@ -71,7 +75,9 @@ export default function DiscoverScreen() {
   const handleSwipe = useCallback(
     async (action: "like" | "pass") => {
       const top = cards[0]
-      if (!top) return
+      if (!top) {
+        return
+      }
 
       setCards((prev) => prev.slice(1))
       void sendSwipe({ foodId: top.id, action }).catch(() => {})

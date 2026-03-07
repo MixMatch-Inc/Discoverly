@@ -10,16 +10,13 @@ on:
 jobs:
   backend-checks:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-      - run: npm install
-      - run: npm run format
-      - run: npm run lint
-      - run: npm run test
-      - run: npm run typecheck
+      - run: npm ci
+      - run: npm run format -w backend
+      - run: npm run lint -w backend
+      - run: npm run test -w backend
+      - run: npm run typecheck -w backend

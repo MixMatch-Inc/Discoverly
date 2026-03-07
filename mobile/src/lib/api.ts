@@ -21,7 +21,11 @@ type DiscoverResponse = {
 
 function getAuthHeaders() {
   const token = useAuthStore.getState().token
-  return token ? { Authorization: `Bearer ${token}` } : {}
+  const headers: Record<string, string> = {}
+  if (token) {
+    headers.Authorization = `Bearer ${token}`
+  }
+  return headers
 }
 
 export async function fetchDiscoverFeed(params: {
