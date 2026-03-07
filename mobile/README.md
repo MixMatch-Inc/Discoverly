@@ -27,3 +27,7 @@ npm run start
 
 - Deep link scheme is `discoverly`.
 - EAS profiles are defined in `eas.json`.
+- Discovery tab pulls from `GET /api/foods/discover`.
+- Swipe actions post to `POST /api/swipe`.
+- Feed prefetch starts when only 3 cards remain.
+- `expo-image` is used for image caching/prefetch to reduce flicker.
