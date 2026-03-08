@@ -19,13 +19,6 @@ discoverly/
   legacy/nest-backend/    # Archived legacy backend (read-only)
 ```
 
-## Why This Bootstrap Exists
-
-This repository was normalized so contributors can pick up Phase 1/2 issues without
-stack ambiguity. The active implementation target is documented in:
-
-- `docs/adr/0001-stack-and-repo-structure.md`
-
 ## Quick Start
 
 ### 1) Install Workspace Dependencies
