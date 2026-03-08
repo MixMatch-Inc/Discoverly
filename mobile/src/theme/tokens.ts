@@ -11,14 +11,14 @@ export const colors = {
   disabled: "#C9CDD4",
   onPrimary: "#FFFFFF",
   onCrypto: "#FFFFFF",
-}
+};
 
 export const radius = {
   xs: 10,
   sm: 12,
   md: 16,
   lg: 24,
-}
+};
 
 export const spacing = {
   xs: 4,
@@ -26,7 +26,7 @@ export const spacing = {
   md: 16,
   lg: 24,
   xl: 32,
-}
+};
 
 export const typography = {
   h1: {
@@ -54,7 +54,7 @@ export const typography = {
     lineHeight: 18,
     fontWeight: "500" as const,
   },
-}
+};
 
 export const shadows = {
   soft: {
@@ -64,4 +64,4 @@ export const shadows = {
     shadowOffset: { width: 0, height: 6 },
     elevation: 4,
   },
-}
+};

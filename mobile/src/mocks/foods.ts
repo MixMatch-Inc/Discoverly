@@ -1,10 +1,10 @@
 export type MockFoodItem = {
-  id: string
-  name: string
-  restaurant: string
-  price: number
-  imageUrl: string
-}
+  id: string;
+  name: string;
+  restaurant: string;
+  price: number;
+  imageUrl: string;
+};
 
 export const mockFoodItems: MockFoodItem[] = [
   {
@@ -55,4 +55,4 @@ export const mockFoodItems: MockFoodItem[] = [
     imageUrl:
       "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=1000&q=80",
   },
-]
+];

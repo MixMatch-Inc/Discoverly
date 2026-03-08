@@ -1,15 +1,19 @@
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Link, useRouter } from "expo-router"
-import { Controller, useForm } from "react-hook-form"
-import { ScrollView } from "react-native"
-import { Button, Input, Typography } from "../../src/components"
-import { useAuthStore } from "../../src/store/useAuthStore"
-import { colors, spacing } from "../../src/theme/tokens"
-import { type RegisterFormValues, registerSchema } from "../../src/validation/auth"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Link, useRouter } from "expo-router";
+import { Controller, useForm } from "react-hook-form";
+import { ScrollView } from "react-native";
+
+import { Button, Input, Typography } from "../../src/components";
+import { useAuthStore } from "../../src/store/useAuthStore";
+import { colors, spacing } from "../../src/theme/tokens";
+import {
+  type RegisterFormValues,
+  registerSchema,
+} from "../../src/validation/auth";
 
 export default function RegisterScreen() {
-  const router = useRouter()
-  const login = useAuthStore((state) => state.login)
+  const router = useRouter();
+  const login = useAuthStore((state) => state.login);
 
   const {
     control,
@@ -24,10 +28,10 @@ export default function RegisterScreen() {
       confirmPassword: "",
     },
     mode: "onBlur",
-  })
+  });
 
   const onSubmit = async ({ email }: RegisterFormValues) => {
-    const token = `session_${email.toLowerCase()}`
+    const token = `session_${email.toLowerCase()}`;
     await login({
       token,
       user: {
@@ -35,9 +39,9 @@ export default function RegisterScreen() {
         email,
         role: "user",
       },
-    })
-    router.replace("/(tabs)/discover")
-  }
+    });
+    router.replace("/(tabs)/discover");
+  };
 
   return (
     <ScrollView
@@ -133,8 +137,12 @@ export default function RegisterScreen() {
         )}
       />
 
-      <Button label="Sign Up" loading={isSubmitting} onPress={handleSubmit(onSubmit)} />
+      <Button
+        label="Sign Up"
+        loading={isSubmitting}
+        onPress={handleSubmit(onSubmit)}
+      />
       <Link href="/(auth)/login">Back To Login</Link>
     </ScrollView>
-  )
+  );
 }

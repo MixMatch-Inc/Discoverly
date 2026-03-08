@@ -1,13 +1,14 @@
-import { Redirect, Tabs } from "expo-router"
-import { useCartStore } from "../../src/store/useCartStore"
-import { useAuthStore } from "../../src/store/useAuthStore"
+import { Redirect, Tabs } from "expo-router";
+
+import { useAuthStore } from "../../src/store/useAuthStore";
+import { useCartStore } from "../../src/store/useCartStore";
 
 export default function TabsLayout() {
-  const token = useAuthStore((state) => state.token)
-  const itemCount = useCartStore((state) => state.items.length)
+  const token = useAuthStore((state) => state.token);
+  const itemCount = useCartStore((state) => state.items.length);
 
   if (!token) {
-    return <Redirect href="/(auth)/login" />
+    return <Redirect href="/(auth)/login" />;
   }
 
   return (
@@ -23,5 +24,5 @@ export default function TabsLayout() {
       <Tabs.Screen name="profile" options={{ title: "Profile" }} />
       <Tabs.Screen name="sandbox" options={{ href: null }} />
     </Tabs>
-  )
+  );
 }

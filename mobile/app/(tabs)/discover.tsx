@@ -1,7 +1,7 @@
-import { useMemo, useState } from "react"
-import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native"
-import { Image } from "expo-image"
-import { Gesture, GestureDetector } from "react-native-gesture-handler"
+import { Image } from "expo-image";
+import { useMemo, useState } from "react";
+import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   Extrapolation,
   interpolate,
@@ -11,111 +11,131 @@ import Animated, {
   useSharedValue,
   withSpring,
   withTiming,
-} from "react-native-reanimated"
-import { mockFoodItems, type MockFoodItem } from "../../src/mocks/foods"
+} from "react-native-reanimated";
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window")
-const SWIPE_THRESHOLD = 120
-const SWIPE_OUT_DISTANCE = SCREEN_WIDTH * 1.3
-const STACK_SIZE = 3
+import { mockFoodItems, type MockFoodItem } from "../../src/mocks/foods";
 
-type SwipeDirection = "left" | "right"
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const SWIPE_THRESHOLD = 120;
+const SWIPE_OUT_DISTANCE = SCREEN_WIDTH * 1.3;
+const STACK_SIZE = 3;
+
+type SwipeDirection = "left" | "right";
 
 export default function DiscoverScreen() {
-  const [activeIndex, setActiveIndex] = useState(0)
-  const translateX = useSharedValue(0)
-  const translateY = useSharedValue(0)
-  const isAnimating = useSharedValue(false)
+  const [activeIndex, setActiveIndex] = useState(0);
+  const translateX = useSharedValue(0);
+  const translateY = useSharedValue(0);
+  const isAnimating = useSharedValue(false);
 
-  const cards = useMemo(() => mockFoodItems.slice(activeIndex), [activeIndex])
-  const visibleCards = cards.slice(0, STACK_SIZE)
+  const cards = useMemo(() => mockFoodItems.slice(activeIndex), [activeIndex]);
+  const visibleCards = cards.slice(0, STACK_SIZE);
 
   const consumeTopCard = (direction: SwipeDirection) => {
-    const current = mockFoodItems[activeIndex]
+    const current = mockFoodItems[activeIndex];
     if (!current) {
-      return
+      return;
     }
 
     if (direction === "right") {
-      console.log(`Swiped Right: [${current.id}]`)
+      console.log(`Swiped Right: [${current.id}]`);
     } else {
-      console.log(`Swiped Left: [${current.id}]`)
+      console.log(`Swiped Left: [${current.id}]`);
     }
 
-    setActiveIndex((prev) => prev + 1)
-  }
+    setActiveIndex((prev) => prev + 1);
+  };
 
   const panGesture = Gesture.Pan()
     .onUpdate((event) => {
       if (isAnimating.value) {
-        return
+        return;
       }
 
-      translateX.value = event.translationX
-      translateY.value = event.translationY * 0.18
+      translateX.value = event.translationX;
+      translateY.value = event.translationY * 0.18;
     })
     .onEnd(() => {
       if (isAnimating.value) {
-        return
+        return;
       }
 
       if (translateX.value > SWIPE_THRESHOLD) {
-        isAnimating.value = true
-        translateX.value = withTiming(SWIPE_OUT_DISTANCE, { duration: 220 }, (finished) => {
-          if (finished) {
-            translateX.value = 0
-            translateY.value = 0
-            isAnimating.value = false
-            runOnJS(consumeTopCard)("right")
-          }
-        })
-        return
+        isAnimating.value = true;
+        translateX.value = withTiming(
+          SWIPE_OUT_DISTANCE,
+          { duration: 220 },
+          (finished) => {
+            if (finished) {
+              translateX.value = 0;
+              translateY.value = 0;
+              isAnimating.value = false;
+              runOnJS(consumeTopCard)("right");
+            }
+          },
+        );
+        return;
       }
 
       if (translateX.value < -SWIPE_THRESHOLD) {
-        isAnimating.value = true
-        translateX.value = withTiming(-SWIPE_OUT_DISTANCE, { duration: 220 }, (finished) => {
-          if (finished) {
-            translateX.value = 0
-            translateY.value = 0
-            isAnimating.value = false
-            runOnJS(consumeTopCard)("left")
-          }
-        })
-        return
+        isAnimating.value = true;
+        translateX.value = withTiming(
+          -SWIPE_OUT_DISTANCE,
+          { duration: 220 },
+          (finished) => {
+            if (finished) {
+              translateX.value = 0;
+              translateY.value = 0;
+              isAnimating.value = false;
+              runOnJS(consumeTopCard)("left");
+            }
+          },
+        );
+        return;
       }
 
-      translateX.value = withSpring(0, { damping: 18, stiffness: 160, mass: 0.9 })
-      translateY.value = withSpring(0, { damping: 18, stiffness: 160, mass: 0.9 })
-    })
+      translateX.value = withSpring(0, {
+        damping: 18,
+        stiffness: 160,
+        mass: 0.9,
+      });
+      translateY.value = withSpring(0, {
+        damping: 18,
+        stiffness: 160,
+        mass: 0.9,
+      });
+    });
 
   const onButtonSwipe = (direction: SwipeDirection) => {
     if (isAnimating.value || cards.length === 0) {
-      return
+      return;
     }
 
-    isAnimating.value = true
-    const toValue = direction === "right" ? SWIPE_OUT_DISTANCE : -SWIPE_OUT_DISTANCE
+    isAnimating.value = true;
+    const toValue =
+      direction === "right" ? SWIPE_OUT_DISTANCE : -SWIPE_OUT_DISTANCE;
     translateX.value = withTiming(toValue, { duration: 220 }, (finished) => {
       if (finished) {
-        translateX.value = 0
-        translateY.value = 0
-        isAnimating.value = false
-        runOnJS(consumeTopCard)(direction)
+        translateX.value = 0;
+        translateY.value = 0;
+        isAnimating.value = false;
+        runOnJS(consumeTopCard)(direction);
       }
-    })
-  }
+    });
+  };
 
   if (cards.length === 0) {
     return (
       <View style={styles.empty}>
         <Text style={styles.emptyTitle}>No More Cards</Text>
-        <Text style={styles.emptySubtitle}>You have reviewed all mock dishes.</Text>
+        <Text style={styles.emptySubtitle}>
+          You have reviewed all mock dishes.
+        </Text>
         <Pressable style={styles.resetButton} onPress={() => setActiveIndex(0)}>
           <Text style={styles.resetLabel}>Reset Stack</Text>
         </Pressable>
       </View>
-    )
+    );
   }
 
   return (
@@ -126,39 +146,60 @@ export default function DiscoverScreen() {
             .map((card, index) => ({ card, index }))
             .reverse()
             .map(({ card, index }) => {
-              const isTop = index === 0
+              const isTop = index === 0;
               return (
-                <SwipeCard key={card.id} card={card} depth={index} isTop={isTop} tx={translateX} ty={translateY} />
-              )
+                <SwipeCard
+                  key={card.id}
+                  card={card}
+                  depth={index}
+                  isTop={isTop}
+                  tx={translateX}
+                  ty={translateY}
+                />
+              );
             })}
         </View>
       </GestureDetector>
 
       <View style={styles.actions}>
-        <Pressable style={[styles.actionButton, styles.nopeButton]} onPress={() => onButtonSwipe("left")}>
+        <Pressable
+          style={[styles.actionButton, styles.nopeButton]}
+          onPress={() => onButtonSwipe("left")}
+        >
           <Text style={styles.actionLabel}>Pass</Text>
         </Pressable>
-        <Pressable style={[styles.actionButton, styles.likeButton]} onPress={() => onButtonSwipe("right")}>
+        <Pressable
+          style={[styles.actionButton, styles.likeButton]}
+          onPress={() => onButtonSwipe("right")}
+        >
           <Text style={styles.actionLabel}>Like</Text>
         </Pressable>
       </View>
     </View>
-  )
+  );
 }
 
 type SwipeCardProps = {
-  card: MockFoodItem
-  depth: number
-  isTop: boolean
-  tx: SharedValue<number>
-  ty: SharedValue<number>
-}
+  card: MockFoodItem;
+  depth: number;
+  isTop: boolean;
+  tx: SharedValue<number>;
+  ty: SharedValue<number>;
+};
 
 function SwipeCard({ card, depth, isTop, tx, ty }: SwipeCardProps) {
   const cardStyle = useAnimatedStyle(() => {
-    const dragAbs = Math.abs(tx.value)
-    const baseScale = 1 - depth * 0.04
-    const nextScaleBoost = depth === 1 ? interpolate(dragAbs, [0, SWIPE_THRESHOLD], [0, 0.04], Extrapolation.CLAMP) : 0
+    const dragAbs = Math.abs(tx.value);
+    const baseScale = 1 - depth * 0.04;
+    const nextScaleBoost =
+      depth === 1
+        ? interpolate(
+            dragAbs,
+            [0, SWIPE_THRESHOLD],
+            [0, 0.04],
+            Extrapolation.CLAMP,
+          )
+        : 0;
 
     return {
       transform: [
@@ -172,22 +213,54 @@ function SwipeCard({ card, depth, isTop, tx, ty }: SwipeCardProps) {
         { scale: baseScale + nextScaleBoost },
       ],
       zIndex: 100 - depth,
-    }
-  })
+    };
+  });
 
   const likeStampStyle = useAnimatedStyle(() => ({
-    opacity: isTop ? interpolate(tx.value, [40, SWIPE_THRESHOLD], [0, 1], Extrapolation.CLAMP) : 0,
-    transform: [{ scale: isTop ? interpolate(tx.value, [40, SWIPE_THRESHOLD], [0.8, 1], Extrapolation.CLAMP) : 0.8 }],
-  }))
-
-  const nopeStampStyle = useAnimatedStyle(() => ({
-    opacity: isTop ? interpolate(tx.value, [-40, -SWIPE_THRESHOLD], [0, 1], Extrapolation.CLAMP) : 0,
+    opacity: isTop
+      ? interpolate(
+          tx.value,
+          [40, SWIPE_THRESHOLD],
+          [0, 1],
+          Extrapolation.CLAMP,
+        )
+      : 0,
     transform: [
       {
-        scale: isTop ? interpolate(tx.value, [-40, -SWIPE_THRESHOLD], [0.8, 1], Extrapolation.CLAMP) : 0.8,
+        scale: isTop
+          ? interpolate(
+              tx.value,
+              [40, SWIPE_THRESHOLD],
+              [0.8, 1],
+              Extrapolation.CLAMP,
+            )
+          : 0.8,
       },
     ],
-  }))
+  }));
+
+  const nopeStampStyle = useAnimatedStyle(() => ({
+    opacity: isTop
+      ? interpolate(
+          tx.value,
+          [-40, -SWIPE_THRESHOLD],
+          [0, 1],
+          Extrapolation.CLAMP,
+        )
+      : 0,
+    transform: [
+      {
+        scale: isTop
+          ? interpolate(
+              tx.value,
+              [-40, -SWIPE_THRESHOLD],
+              [0.8, 1],
+              Extrapolation.CLAMP,
+            )
+          : 0.8,
+      },
+    ],
+  }));
 
   return (
     <Animated.View style={[styles.card, cardStyle]}>
@@ -206,7 +279,7 @@ function SwipeCard({ card, depth, isTop, tx, ty }: SwipeCardProps) {
         <Text style={styles.meta}>${card.price.toFixed(2)}</Text>
       </View>
     </Animated.View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -333,4 +406,4 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontWeight: "700",
   },
-})
+});

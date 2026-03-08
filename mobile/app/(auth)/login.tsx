@@ -1,15 +1,16 @@
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Link, useRouter } from "expo-router"
-import { Controller, useForm } from "react-hook-form"
-import { View } from "react-native"
-import { Button, Input, Typography } from "../../src/components"
-import { useAuthStore } from "../../src/store/useAuthStore"
-import { colors, spacing } from "../../src/theme/tokens"
-import { type LoginFormValues, loginSchema } from "../../src/validation/auth"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Link, useRouter } from "expo-router";
+import { Controller, useForm } from "react-hook-form";
+import { View } from "react-native";
+
+import { Button, Input, Typography } from "../../src/components";
+import { useAuthStore } from "../../src/store/useAuthStore";
+import { colors, spacing } from "../../src/theme/tokens";
+import { type LoginFormValues, loginSchema } from "../../src/validation/auth";
 
 export default function LoginScreen() {
-  const router = useRouter()
-  const login = useAuthStore((state) => state.login)
+  const router = useRouter();
+  const login = useAuthStore((state) => state.login);
 
   const {
     control,
@@ -22,10 +23,10 @@ export default function LoginScreen() {
       password: "",
     },
     mode: "onBlur",
-  })
+  });
 
   const onSubmit = async ({ email }: LoginFormValues) => {
-    const token = `session_${email.toLowerCase()}`
+    const token = `session_${email.toLowerCase()}`;
     await login({
       token,
       user: {
@@ -33,9 +34,9 @@ export default function LoginScreen() {
         email,
         role: "user",
       },
-    })
-    router.replace("/(tabs)/discover")
-  }
+    });
+    router.replace("/(tabs)/discover");
+  };
 
   return (
     <View
@@ -90,8 +91,12 @@ export default function LoginScreen() {
         )}
       />
 
-      <Button label="Sign In" loading={isSubmitting} onPress={handleSubmit(onSubmit)} />
+      <Button
+        label="Sign In"
+        loading={isSubmitting}
+        onPress={handleSubmit(onSubmit)}
+      />
       <Link href="/(auth)/register">Go To Register</Link>
     </View>
-  )
+  );
 }

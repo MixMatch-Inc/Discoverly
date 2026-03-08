@@ -1,16 +1,23 @@
-import { useState } from "react"
-import { Pressable, TextInput, View, type TextInputProps, type ViewStyle } from "react-native"
-import { colors, radius, spacing } from "../theme/tokens"
-import { Typography } from "./Typography"
+import { useState } from "react";
+import {
+  Pressable,
+  TextInput,
+  View,
+  type TextInputProps,
+  type ViewStyle,
+} from "react-native";
+
+import { Typography } from "./Typography";
+import { colors, radius, spacing } from "../theme/tokens";
 
 type InputProps = TextInputProps & {
-  label?: string
-  error?: string
-  forceFocused?: boolean
-  containerStyle?: ViewStyle
-  rightLabel?: string
-  onRightPress?: () => void
-}
+  label?: string;
+  error?: string;
+  forceFocused?: boolean;
+  containerStyle?: ViewStyle;
+  rightLabel?: string;
+  onRightPress?: () => void;
+};
 
 export function Input({
   label,
@@ -23,8 +30,8 @@ export function Input({
   onBlur,
   ...props
 }: InputProps) {
-  const [isFocused, setIsFocused] = useState(false)
-  const focused = forceFocused || isFocused
+  const [isFocused, setIsFocused] = useState(false);
+  const focused = forceFocused || isFocused;
 
   return (
     <View style={[{ width: "100%", gap: spacing.xs }, containerStyle]}>
@@ -34,7 +41,11 @@ export function Input({
           minHeight: 52,
           borderRadius: radius.md,
           borderWidth: 1.5,
-          borderColor: error ? colors.error : focused ? colors.crypto : colors.border,
+          borderColor: error
+            ? colors.error
+            : focused
+              ? colors.crypto
+              : colors.border,
           backgroundColor: colors.surface,
           paddingHorizontal: spacing.md,
           flexDirection: "row",
@@ -45,12 +56,12 @@ export function Input({
         <TextInput
           placeholderTextColor={colors.muted}
           onFocus={(event) => {
-            setIsFocused(true)
-            onFocus?.(event)
+            setIsFocused(true);
+            onFocus?.(event);
           }}
           onBlur={(event) => {
-            setIsFocused(false)
-            onBlur?.(event)
+            setIsFocused(false);
+            onBlur?.(event);
           }}
           style={{
             color: colors.text,
@@ -73,5 +84,5 @@ export function Input({
         </Typography>
       ) : null}
     </View>
-  )
+  );
 }

@@ -9,8 +9,8 @@
   ],
   "scripts": {
     "bootstrap": "npm install --workspaces",
-    "lint": "npm run lint -w backend && npm run lint -w mobile",
-    "typecheck": "npm run typecheck -w backend && npm run typecheck -w mobile",
+    "lint": "npm run lint -w backend && npm run lint -w mobile && npm run lint -w web",
+    "typecheck": "npm run typecheck -w backend && npm run typecheck -w mobile && npm run typecheck -w web",
     "test": "npm run test -w backend"
   }
 }

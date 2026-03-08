@@ -1,11 +1,12 @@
-import type { ReactNode } from "react"
-import { View, type ViewStyle } from "react-native"
-import { colors, radius, shadows, spacing } from "../theme/tokens"
+import type { ReactNode } from "react";
+import { View, type ViewStyle } from "react-native";
+
+import { colors, radius, shadows, spacing } from "../theme/tokens";
 
 type CardProps = {
-  children: ReactNode
-  style?: ViewStyle
-}
+  children: ReactNode;
+  style?: ViewStyle;
+};
 
 export function Card({ children, style }: CardProps) {
   return (
@@ -24,5 +25,5 @@ export function Card({ children, style }: CardProps) {
     >
       {children}
     </View>
-  )
+  );
 }

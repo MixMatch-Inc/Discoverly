@@ -1,19 +1,20 @@
-import { Pressable, StyleSheet, Text, View } from "react-native"
-import { useCartStore } from "../../src/store/useCartStore"
+import { Pressable, StyleSheet, Text, View } from "react-native";
+
+import { useCartStore } from "../../src/store/useCartStore";
 
 export default function CartScreen() {
-  const items = useCartStore((state) => state.items)
-  const clear = useCartStore((state) => state.clear)
+  const items = useCartStore((state) => state.items);
+  const clear = useCartStore((state) => state.clear);
 
   if (items.length === 0) {
     return (
       <View style={styles.container}>
         <Text style={styles.emptyText}>Your Cart is Empty.</Text>
       </View>
-    )
+    );
   }
 
-  const total = items.reduce((sum, item) => sum + item.price, 0)
+  const total = items.reduce((sum, item) => sum + item.price, 0);
 
   return (
     <View style={styles.container}>
@@ -32,7 +33,7 @@ export default function CartScreen() {
         <Text style={styles.clearText}>Clear Cart</Text>
       </Pressable>
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -98,4 +99,4 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontWeight: "700",
   },
-})
+});

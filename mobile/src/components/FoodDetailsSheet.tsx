@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react"
+import { useEffect, useMemo, useRef } from "react";
 import {
   Animated,
   Modal,
@@ -8,70 +8,87 @@ import {
   Text,
   TouchableWithoutFeedback,
   View,
-} from "react-native"
-import type { DiscoverItem } from "../lib/api"
+} from "react-native";
+
+import type { DiscoverItem } from "../lib/api";
 
 type FoodDetailsSheetProps = {
-  visible: boolean
-  card: DiscoverItem | null
-  onClose: () => void
-  onSwipePass: () => void
-  onSwipeLike: () => void
-  translateY: Animated.AnimatedInterpolation<string | number>
-  backdropOpacity: Animated.AnimatedInterpolation<string | number>
-}
+  visible: boolean;
+  card: DiscoverItem | null;
+  onClose: () => void;
+  onSwipePass: () => void;
+  onSwipeLike: () => void;
+  translateY: Animated.AnimatedInterpolation<string | number>;
+  backdropOpacity: Animated.AnimatedInterpolation<string | number>;
+};
 
 export function FoodDetailsSheet(props: FoodDetailsSheetProps) {
-  const { visible, card, onClose, onSwipePass, onSwipeLike, translateY, backdropOpacity } = props
-  const XLM_PER_USD = 4.2
-  const swipeX = useRef(new Animated.Value(0)).current
-  const swipeTriggered = useRef(false)
-  const SWIPE_THRESHOLD = 90
+  const {
+    visible,
+    card,
+    onClose,
+    onSwipePass,
+    onSwipeLike,
+    translateY,
+    backdropOpacity,
+  } = props;
+  const XLM_PER_USD = 4.2;
+  const swipeX = useRef(new Animated.Value(0)).current;
+  const swipeTriggered = useRef(false);
+  const SWIPE_THRESHOLD = 90;
 
   useEffect(() => {
-    swipeTriggered.current = false
-    swipeX.setValue(0)
-  }, [visible, card, swipeX])
+    swipeTriggered.current = false;
+    swipeX.setValue(0);
+  }, [visible, card, swipeX]);
 
   const panResponder = useMemo(
     () =>
       PanResponder.create({
         onMoveShouldSetPanResponder: (_evt, gestureState) =>
-          Math.abs(gestureState.dx) > 12 && Math.abs(gestureState.dx) > Math.abs(gestureState.dy),
+          Math.abs(gestureState.dx) > 12 &&
+          Math.abs(gestureState.dx) > Math.abs(gestureState.dy),
         onPanResponderMove: (_evt, gestureState) => {
-          swipeX.setValue(gestureState.dx)
+          swipeX.setValue(gestureState.dx);
         },
         onPanResponderRelease: (_evt, gestureState) => {
           if (swipeTriggered.current) {
-            return
+            return;
           }
 
           if (gestureState.dx > SWIPE_THRESHOLD) {
-            swipeTriggered.current = true
-            onSwipeLike()
-            return
+            swipeTriggered.current = true;
+            onSwipeLike();
+            return;
           }
 
           if (gestureState.dx < -SWIPE_THRESHOLD) {
-            swipeTriggered.current = true
-            onSwipePass()
-            return
+            swipeTriggered.current = true;
+            onSwipePass();
+            return;
           }
 
           Animated.spring(swipeX, {
             toValue: 0,
             useNativeDriver: true,
             bounciness: 6,
-          }).start()
+          }).start();
         },
       }),
     [onSwipeLike, onSwipePass, swipeX],
-  )
+  );
 
   return (
-    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="none"
+      onRequestClose={onClose}
+    >
       <TouchableWithoutFeedback onPress={onClose}>
-        <Animated.View style={[styles.backdrop, { opacity: backdropOpacity }]} />
+        <Animated.View
+          style={[styles.backdrop, { opacity: backdropOpacity }]}
+        />
       </TouchableWithoutFeedback>
 
       <Animated.View
@@ -88,17 +105,25 @@ export function FoodDetailsSheet(props: FoodDetailsSheetProps) {
             <Text style={styles.modalTitle}>{card.name}</Text>
             <Text style={styles.modalMeta}>{card.restaurantName}</Text>
             <Text style={styles.modalMeta}>
-              ${card.price.toFixed(2)} • {(card.price * XLM_PER_USD).toFixed(2)} XLM •{" "}
-              {(card.distanceMeters / 1000).toFixed(1)}km
+              ${card.price.toFixed(2)} • {(card.price * XLM_PER_USD).toFixed(2)}{" "}
+              XLM • {(card.distanceMeters / 1000).toFixed(1)}km
             </Text>
             <Text style={styles.modalBody}>{card.description}</Text>
-            <Text style={styles.swipeHint}>Swipe left to pass, right to like</Text>
+            <Text style={styles.swipeHint}>
+              Swipe left to pass, right to like
+            </Text>
 
             <View style={styles.modalActions}>
-              <Pressable style={[styles.button, styles.passBtn]} onPress={onSwipePass}>
+              <Pressable
+                style={[styles.button, styles.passBtn]}
+                onPress={onSwipePass}
+              >
                 <Text style={styles.buttonText}>Swipe Left</Text>
               </Pressable>
-              <Pressable style={[styles.button, styles.likeBtn]} onPress={onSwipeLike}>
+              <Pressable
+                style={[styles.button, styles.likeBtn]}
+                onPress={onSwipeLike}
+              >
                 <Text style={styles.buttonText}>Swipe Right</Text>
               </Pressable>
             </View>
@@ -106,7 +131,7 @@ export function FoodDetailsSheet(props: FoodDetailsSheetProps) {
         ) : null}
       </Animated.View>
     </Modal>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -167,4 +192,4 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "700",
   },
-})
+});
