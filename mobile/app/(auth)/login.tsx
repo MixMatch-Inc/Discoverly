@@ -9,7 +9,7 @@ import { type LoginFormValues, loginSchema } from "../../src/validation/auth"
 
 export default function LoginScreen() {
   const router = useRouter()
-  const setToken = useAuthStore((state) => state.setToken)
+  const login = useAuthStore((state) => state.login)
 
   const {
     control,
@@ -26,7 +26,14 @@ export default function LoginScreen() {
 
   const onSubmit = async ({ email }: LoginFormValues) => {
     const token = `session_${email.toLowerCase()}`
-    setToken(token)
+    await login({
+      token,
+      user: {
+        id: "660000000000000000000001",
+        email,
+        role: "user",
+      },
+    })
     router.replace("/(tabs)/discover")
   }
 
