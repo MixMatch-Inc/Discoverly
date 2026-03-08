@@ -6,6 +6,43 @@ import { createApp } from "../src/app.js"
 import { env } from "../src/config/env.js"
 import { FoodItemModel, RestaurantModel } from "../src/models/index.js"
 
+test("GET /api/restaurant/foods returns owner-scoped menu items", async () => {
+  const app = createApp()
+  const ownerId = "660000000000000000000001"
+  const token = jwt.sign({ sub: ownerId, role: "restaurant" }, env.JWT_SECRET)
+  const originalFind = FoodItemModel.find
+
+  ;(FoodItemModel.find as unknown as (...args: unknown[]) => {
+    sort: (...args: unknown[]) => { lean: () => Promise<unknown> }
+  }) = () => ({
+    sort: () => ({
+      lean: async () => [
+        {
+          _id: "660000000000000000000111",
+          restaurant_id: "660000000000000000000010",
+          owner_user_id: ownerId,
+          name: "Nori Ramen",
+          description: "Creamy broth",
+          price: 14,
+          image_url: "https://example.com/ramen.png",
+          is_active: true,
+        },
+      ],
+    }),
+  })
+
+  const response = await request(app)
+    .get("/api/restaurant/foods")
+    .set("Authorization", `Bearer ${token}`)
+
+  assert.equal(response.status, 200)
+  assert.equal(response.body.items.length, 1)
+  assert.equal(response.body.items[0].name, "Nori Ramen")
+  assert.equal(response.body.items[0].is_active, true)
+
+  FoodItemModel.find = originalFind
+})
+
 test("PUT /api/restaurant/foods/:id returns 403 when non-owner restaurant tries update", async () => {
   const app = createApp()
   const token = jwt.sign({ sub: "660000000000000000000001", role: "restaurant" }, env.JWT_SECRET)

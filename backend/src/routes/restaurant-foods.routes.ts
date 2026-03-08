@@ -34,6 +34,29 @@ export const restaurantFoodsRouter = Router()
 restaurantFoodsRouter.use(authenticate)
 restaurantFoodsRouter.use(requireRole(["restaurant", "admin"]))
 
+restaurantFoodsRouter.get("/", async (req, res, next) => {
+  try {
+    const isAdmin = req.user!.role === "admin"
+    const filter = isAdmin ? {} : { owner_user_id: req.user!.id }
+
+    const foods = await FoodItemModel.find(filter).sort({ createdAt: -1 }).lean()
+
+    res.status(200).json({
+      items: foods.map((item) => ({
+        id: String(item._id),
+        restaurant_id: String(item.restaurant_id),
+        name: item.name,
+        price: item.price,
+        description: item.description,
+        image_url: item.image_url,
+        is_active: item.is_active,
+      })),
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
 restaurantFoodsRouter.post(
   "/",
   validateRequest({ body: createFoodSchema }),
