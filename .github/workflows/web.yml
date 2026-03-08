@@ -2,10 +2,12 @@ name: Web CI
 
 on:
   pull_request:
-    branches: ["main"]
+    branches: ['main']
     paths:
-      - "web/**"
-      - ".github/workflows/web.yml"
+      - 'web/**'
+      - '.github/workflows/web.yml'
+  push:
+    branches: ['main']
 
 jobs:
   web-checks:
@@ -14,7 +16,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: '20'
       - run: npm ci
       - run: npm run lint -w web
       - run: npm run typecheck -w web

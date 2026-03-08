@@ -2,10 +2,12 @@ name: Backend CI
 
 on:
   pull_request:
-    branches: ["main"]
+    branches: ['main']
     paths:
-      - "backend/**"
-      - ".github/workflows/backend.yml"
+      - 'backend/**'
+      - '.github/workflows/backend.yml'
+  push:
+    branches: ['main']
 
 jobs:
   backend-checks:
@@ -14,7 +16,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: '20'
       - run: npm ci
       - run: npm run format -w backend
       - run: npm run lint -w backend
