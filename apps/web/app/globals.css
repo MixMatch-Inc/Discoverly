@@ -1,0 +1,47 @@
+:root {
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+  color-scheme: light dark;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+}
+
+form {
+  display: flex;
+  width: 100%;
+  max-width: 360px;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 2rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+input {
+  padding: 0.5rem;
+  font-size: 1rem;
+}
+
+button {
+  padding: 0.6rem;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+[role='alert'] {
+  margin: 0;
+  color: #c0392b;
+  font-size: 0.875rem;
+}
