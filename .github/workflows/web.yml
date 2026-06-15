@@ -1,0 +1,32 @@
+name: web
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build shared package
+        run: npm run build -w @discoverly/shared
+
+      - name: Lint
+        run: npm run lint -w @discoverly/web
+
+      - name: Test
+        run: npm run test -w @discoverly/web
+
+      - name: Build
+        run: npm run build -w @discoverly/web
