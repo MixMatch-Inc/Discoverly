@@ -4,13 +4,18 @@ import path from 'node:path';
 import sharp from 'sharp';
 import { env } from '../../shared/config/env.js';
 
-const s3 = new S3Client({
-  region: env.AWS_REGION,
-  credentials: {
-    accessKeyId: env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
-  },
-});
+function getS3Client(): S3Client {
+  if (!env.AWS_ACCESS_KEY_ID || !env.AWS_SECRET_ACCESS_KEY) {
+    throw new Error('AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY must be set to use image uploads');
+  }
+  return new S3Client({
+    region: env.AWS_REGION,
+    credentials: {
+      accessKeyId: env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
+    },
+  });
+}
 
 export interface UploadVariant {
   key: string;
@@ -32,7 +37,7 @@ const VARIANTS = [
 
 function buildUrl(key: string): string {
   if (env.CDN_BASE_URL) return `${env.CDN_BASE_URL}/${key}`;
-  return `https://${env.AWS_S3_BUCKET}.s3.${env.AWS_REGION}.amazonaws.com/${key}`;
+  return `https://${env.AWS_S3_BUCKET!}.s3.${env.AWS_REGION}.amazonaws.com/${key}`;
 }
 
 async function processAndUpload(
@@ -47,6 +52,9 @@ async function processAndUpload(
     .toBuffer({ resolveWithObject: true });
 
   const key = `${folder}/${slug}-${variant.name}.webp`;
+
+  const s3 = getS3Client();
+  if (!env.AWS_S3_BUCKET) throw new Error('AWS_S3_BUCKET must be set to use image uploads');
 
   await s3.send(
     new PutObjectCommand({
