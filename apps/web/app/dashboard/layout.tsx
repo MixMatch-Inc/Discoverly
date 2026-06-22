@@ -6,16 +6,16 @@ import { Sidebar } from '../../components/Sidebar';
 import { useAuth } from '../../lib/auth-context';
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!user) {
+    if (!isLoading && !user) {
       router.replace('/login');
     }
-  }, [user, router]);
+  }, [isLoading, user, router]);
 
-  if (!user) return null;
+  if (isLoading || !user) return null;
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
