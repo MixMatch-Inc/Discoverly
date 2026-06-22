@@ -4,6 +4,7 @@ import { rateLimit } from 'express-rate-limit';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import { authRouter } from './modules/auth/routes/auth.routes.js';
+import { uploadsRouter } from './modules/uploads/uploads.routes.js';
 import { errorHandler } from './shared/middleware/error-handler.js';
 import { notFoundHandler } from './shared/middleware/not-found.js';
 
@@ -25,6 +26,7 @@ export function createApp(): Express {
   });
 
   app.use('/api/auth', authRouter);
+  app.use('/api/uploads', uploadsRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);
