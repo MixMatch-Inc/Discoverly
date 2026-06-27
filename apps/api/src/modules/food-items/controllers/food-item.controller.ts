@@ -1,8 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import { AppError } from '../../../shared/errors/app-error.js';
-import { paginate } from '../../../shared/query/paginate.js';
 import type { AuthenticatedRequest } from '../../../shared/types/express.js';
-import { FoodItemModel } from '../repositories/food-item.model.js';
 import { foodItemService } from '../services/food-item.service.js';
 import { createFoodItemSchema, updateFoodItemSchema } from '../validators/food-item.validators.js';
 
@@ -24,12 +22,8 @@ export const foodItemController = {
       const includeUnavailable = req.query['includeUnavailable'] === 'true';
       const page = Math.max(1, Number(req.query['page']) || 1);
       const limit = Math.min(100, Math.max(1, Number(req.query['limit']) || 20));
-
-      const filter: Record<string, unknown> = { restaurantId };
-      if (!includeUnavailable) filter['isAvailable'] = true;
-
-      const result = await paginate(FoodItemModel, filter, { page, limit });
-      res.status(200).json(result);
+      const { docs, total } = await foodItemService.list(restaurantId, includeUnavailable, page, limit);
+      res.status(200).json({ data: docs, meta: { page, limit, total } });
     } catch (error) {
       next(error);
     }
