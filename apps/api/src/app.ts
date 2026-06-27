@@ -4,6 +4,7 @@ import { rateLimit } from 'express-rate-limit';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import { authRouter } from './modules/auth/routes/auth.routes.js';
+import { foodItemRouter } from './modules/food-items/routes/food-item.routes.js';
 import { restaurantRouter } from './modules/restaurants/routes/restaurant.routes.js';
 import { uploadsRouter } from './modules/uploads/uploads.routes.js';
 import { errorHandler } from './shared/middleware/error-handler.js';
@@ -28,6 +29,7 @@ export function createApp(): Express {
 
   app.use('/api/auth', authRouter);
   app.use('/api/restaurants', restaurantRouter);
+  app.use('/api/restaurants/:restaurantId/food-items', foodItemRouter);
   app.use('/api/uploads', uploadsRouter);
 
   app.use(notFoundHandler);
