@@ -44,8 +44,6 @@ interface Props {
   categories: string[];
 }
 
-//const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5000';
-
 const EMPTY_FORM: FoodItemFormData = {
   name: '',
   description: '',
