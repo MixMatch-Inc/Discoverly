@@ -1,6 +1,10 @@
 import type { NextFunction, Request, Response } from 'express';
 import { AppError } from '../../../shared/errors/app-error.js';
+import { applyGeoFilter } from '../../../shared/query/geo-filter.js';
+import { paginate } from '../../../shared/query/paginate.js';
+import { applyTextSearch } from '../../../shared/query/text-search.js';
 import type { AuthenticatedRequest } from '../../../shared/types/express.js';
+import { RestaurantModel } from '../repositories/restaurant.model.js';
 import { restaurantService } from '../services/restaurant.service.js';
 import { createRestaurantSchema, updateRestaurantSchema } from '../validators/restaurant.validators.js';
 
@@ -19,9 +23,26 @@ export const restaurantController = {
   async list(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const page = Math.max(1, Number(req.query['page']) || 1);
-      const limit = Math.min(50, Math.max(1, Number(req.query['limit']) || 20));
-      const { docs, total } = await restaurantService.list(page, limit);
-      res.status(200).json({ data: docs, meta: { page, limit, total } });
+      const limit = Math.min(100, Math.max(1, Number(req.query['limit']) || 20));
+
+      let filter: Record<string, unknown> = { isActive: true };
+
+      const cuisine = req.query['cuisine'] as string | undefined;
+      if (cuisine) {
+        const tags = cuisine.split(',').map((t) => t.trim()).filter(Boolean);
+        if (tags.length) filter['cuisineTags'] = { $in: tags };
+      }
+
+      const { filter: searchFilter, scoreSort } = applyTextSearch(filter, req.query['q'] as string | undefined);
+      filter = searchFilter;
+
+      const lat = req.query['lat'] ? Number(req.query['lat']) : undefined;
+      const lng = req.query['lng'] ? Number(req.query['lng']) : undefined;
+      const radius = req.query['radius'] ? Number(req.query['radius']) : undefined;
+      filter = applyGeoFilter(filter, { lat, lng, radius });
+
+      const result = await paginate(RestaurantModel, filter, { page, limit }, { scoreSort });
+      res.status(200).json(result);
     } catch (error) {
       next(error);
     }

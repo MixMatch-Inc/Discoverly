@@ -99,7 +99,7 @@ describe('GET /api/restaurants', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.data).toHaveLength(1);
-    expect(res.body.meta.total).toBe(1);
+    expect(res.body.pagination.total).toBe(1);
   });
 
   it('excludes soft-deleted restaurants', async () => {
@@ -127,8 +127,8 @@ describe('GET /api/restaurants', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.data).toHaveLength(1);
-    expect(res.body.meta.total).toBe(2);
-    expect(res.body.meta.limit).toBe(1);
+    expect(res.body.pagination.total).toBe(2);
+    expect(res.body.pagination.limit).toBe(1);
   });
 
   it('returns empty array when no restaurants match', async () => {

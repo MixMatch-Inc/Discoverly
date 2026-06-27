@@ -146,7 +146,7 @@ describe('GET /api/restaurants/:restaurantId/food-items', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.data).toHaveLength(1);
-    expect(res.body.meta.total).toBe(2);
+    expect(res.body.pagination.total).toBe(2);
   });
 });
 
