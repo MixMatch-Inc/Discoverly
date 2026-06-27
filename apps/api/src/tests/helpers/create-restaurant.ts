@@ -1,17 +1,17 @@
 import type { Express } from 'express';
 import request from 'supertest';
 
-const DEFAULT_RESTAURANT = {
-  name: 'Test Restaurant',
-  description: 'A test restaurant',
-  address: { city: 'Lagos', country: 'Nigeria' },
-  cuisineTags: ['italian'],
+const BASE_PAYLOAD = {
+  name: 'Mama Nkechi Kitchen',
+  description: 'Authentic home-style cooking',
+  address: { city: 'Abuja', country: 'Nigeria' },
+  cuisineTags: ['mediterranean'],
 };
 
-export async function createRestaurant(app: Express, token: string, overrides?: Record<string, unknown>) {
+export async function seedRestaurant(app: Express, token: string, overrides?: Record<string, unknown>) {
   const res = await request(app)
     .post('/api/restaurants')
     .set('Authorization', `Bearer ${token}`)
-    .send({ ...DEFAULT_RESTAURANT, ...overrides });
+    .send({ ...BASE_PAYLOAD, ...overrides });
   return res.body.data;
 }
